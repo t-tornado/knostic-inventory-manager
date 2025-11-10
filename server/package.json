@@ -2,10 +2,39 @@
   "name": "knostic-inventory-server",
   "version": "1.0.0",
   "description": "Server application for the project",
-  "scripts": {},
+  "scripts": {
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "lint": "eslint ."
+  },
   "author": "Anthony Amponsah",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2"
+    "@types/jest": "^30.0.0",
+    "express": "^4.21.2",
+    "nodemon": "^3.1.10",
+    "sqlite3": "^5.1.7",
+    "ts-node": "^10.9.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.0",
+    "@types/sqlite3": "^3.1.11",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
   }
 }
