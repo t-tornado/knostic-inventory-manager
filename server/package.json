@@ -1,0 +1,11 @@
+{
+  "name": "knostic-inventory-server",
+  "version": "1.0.0",
+  "description": "Server application for the project",
+  "scripts": {},
+  "author": "Anthony Amponsah",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
