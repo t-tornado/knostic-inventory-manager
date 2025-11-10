@@ -1,0 +1,10 @@
+{
+  "workspaces": [
+    "web",
+    "server"
+  ],
+  "displayName": "Knostic Inventory Management App",
+  "dependencies": {
+    "husky": "^9.1.7"
+  }
+}
