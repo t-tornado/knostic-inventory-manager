@@ -1,0 +1,9 @@
+{
+  "name": "knostic-inventory-web",
+  "version": "1.0.0",
+  "description": "Web application for the project",
+  "scripts": {},
+  "author": "Anthony Amponsah",
+  "license": "MIT",
+  "dependencies": {}
+}
