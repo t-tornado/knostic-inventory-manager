@@ -4,7 +4,7 @@ import { theme } from "@/shared/theme";
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   return (
-    <MUIThemeProvider theme={theme}>
+    <MUIThemeProvider theme={theme} defaultMode={"light"}>
       <CssBaseline />
       {children}
     </MUIThemeProvider>

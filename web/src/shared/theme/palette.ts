@@ -36,6 +36,9 @@ export const lightPalette = {
     2: neutral[100],
     3: neutral[50],
   },
+  header: {
+    background: "rgba(255, 255, 255, 0.95)",
+  },
 };
 
 export const darkPalette = {
@@ -72,4 +75,13 @@ export const darkPalette = {
     2: neutral[900],
     3: neutral[1000],
   },
+  header: {
+    background: "rgba(30, 41, 59, 0.95)",
+  },
+};
+
+export const headerShadow = {
+  light:
+    "0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02)",
+  dark: "0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05)",
 };
