@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ApiClientFactory } from '../base';
-import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
+import type { ApiClientFactory } from "../base";
+import axios, {
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+} from "axios";
 
 export const createAxiosApiClient: ApiClientFactory<
   InternalAxiosRequestConfig,
@@ -9,7 +11,7 @@ export const createAxiosApiClient: ApiClientFactory<
   const instance = axios.create({
     baseURL,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
