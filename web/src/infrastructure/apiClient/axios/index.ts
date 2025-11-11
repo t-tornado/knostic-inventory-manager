@@ -1,4 +1,4 @@
-import { dotenv } from "../../../app/config";
+import { dotenv } from "@/shared/config";
 import { createAxiosApiClient } from "./factory";
 import { requestInterceptor } from "./interceptors/request";
 import { responseInterceptor } from "./interceptors/response";
