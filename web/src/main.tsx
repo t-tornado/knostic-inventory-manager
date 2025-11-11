@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ToastContainer } from "react-toastify";
 import { AppProvider } from "@/app/providers";
-import type { FeatureRoutes } from "@/lib/types";
+import type { FeatureRoutes } from "@/shared/types";
 
 const routeModules = import.meta.glob<{ [key: string]: FeatureRoutes }>(
   "./features/*/routes.{ts,tsx}",

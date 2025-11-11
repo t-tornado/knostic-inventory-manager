@@ -1,4 +1,4 @@
-import type { FeatureRoutes } from "../../lib/types";
+import type { FeatureRoutes } from "@/shared/types";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { NotFound } from "../layout/NotFound";
 import { RouterWrapper } from "../layout/RouterWrapper";

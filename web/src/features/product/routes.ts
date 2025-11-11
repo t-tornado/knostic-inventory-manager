@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import type { FeatureRoutes } from "../../lib/types";
+import type { FeatureRoutes } from "../../shared/types";
 
 export const productRoutes: FeatureRoutes = [
   {

@@ -1,6 +1,7 @@
-import type { FeatureRoutes } from "../../lib/types";
+import type { FeatureRoutes } from "../../shared/types";
 import { QueryClientProvider } from "./QueryClientProvider";
 import { RouterProvider } from "./RouterProvider";
+import { ThemeProvider } from "./ThemeProvider";
 
 interface AppProviderProps {
   routes: FeatureRoutes;
@@ -9,7 +10,9 @@ interface AppProviderProps {
 export const AppProvider = ({ routes }: AppProviderProps) => {
   return (
     <QueryClientProvider>
-      <RouterProvider routes={routes} />
+      <ThemeProvider>
+        <RouterProvider routes={routes} />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
