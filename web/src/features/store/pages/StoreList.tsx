@@ -1,4 +1,4 @@
-import { PageLayout } from "@/app/layout";
+import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
 import { BusinessTable } from "@/shared/components/BusinessTable";
 import type {

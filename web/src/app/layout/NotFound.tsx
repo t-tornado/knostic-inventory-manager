@@ -1,4 +1,4 @@
-import { PageLayout } from "./PageLayout";
+import { PageLayout } from "@/shared/components/PageLayout";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 export const NotFound = () => {
