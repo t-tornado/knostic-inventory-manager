@@ -18,12 +18,4 @@ export const storeRoutes: FeatureRoutes = [
       }))
     ),
   },
-  {
-    path: "/stores/:id/products",
-    element: lazy(() =>
-      import("./pages/StoreProductList").then((module) => ({
-        default: module.StoreProductList,
-      }))
-    ),
-  },
 ];

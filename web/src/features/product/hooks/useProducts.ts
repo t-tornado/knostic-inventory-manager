@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { storeService } from "../service";
-import type { StoreQueryParams, StoreQueryResult } from "../types";
+import { productService } from "../service";
+import type { ProductQueryParams, ProductQueryResult } from "../types";
 import { queryKeys } from "@/shared/config/queryKeys";
 
-export interface UseStoresOptions extends StoreQueryParams {
+export interface UseProductsOptions extends ProductQueryParams {
   enabled?: boolean;
   refetchInterval?: number | false;
 }
 
-export function useStores(options: UseStoresOptions = {}) {
+export function useProducts(options: UseProductsOptions = {}) {
   const {
     enabled = true,
     refetchInterval = false,
@@ -19,7 +19,7 @@ export function useStores(options: UseStoresOptions = {}) {
     pageSize,
   } = options;
 
-  const queryParams: StoreQueryParams = {
+  const queryParams: ProductQueryParams = {
     search,
     filters,
     sort,
@@ -27,9 +27,9 @@ export function useStores(options: UseStoresOptions = {}) {
     pageSize,
   };
 
-  return useQuery<StoreQueryResult, Error>({
-    queryKey: queryKeys.stores.list(queryParams),
-    queryFn: () => storeService.getStores(queryParams),
+  return useQuery<ProductQueryResult, Error>({
+    queryKey: queryKeys.products.list(queryParams),
+    queryFn: () => productService.getProducts(queryParams),
     enabled,
     refetchInterval,
     staleTime: 30000,

@@ -6,8 +6,7 @@ import type {
 import type { Store, StoreId } from "../../domain/entities/Store";
 import type { ISODateTime } from "../../domain/entities/ValueObject";
 import type { IDatabase } from "../../infrastructure/database";
-import { buildFilterConditions } from "./filterBuilder";
-import type { Filter } from "../../domain/repositories/filterTypes";
+import { buildQuery } from "./queryBuilder";
 
 interface StoreRow {
   id: string;
@@ -33,59 +32,20 @@ export class StoreRepository implements IStoreRepository {
     const pageSize = params?.pageSize || 25;
     const offset = (page - 1) * pageSize;
 
-    // Build WHERE clause
-    const conditions: string[] = [];
-    const queryParams: unknown[] = [];
-
-    // Search functionality (searches across name and id)
-    if (params?.search) {
-      conditions.push("(name LIKE ? OR id LIKE ?)");
-      const searchTerm = `%${params.search}%`;
-      queryParams.push(searchTerm, searchTerm);
-    }
-
-    // Decode and apply filters
-    if (params?.filters) {
-      try {
-        const filters = JSON.parse(params.filters) as Filter[];
-        const filterConditions = buildFilterConditions(filters, queryParams);
-        if (filterConditions) {
-          conditions.push(filterConditions);
-        }
-      } catch (error) {
-        // Invalid filters - ignore
-        console.error("Failed to parse filters:", error);
-      }
-    }
-
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-    // Build ORDER BY clause
-    let orderBy = "ORDER BY created_at DESC";
-    if (params?.sort) {
-      try {
-        const sortArray = JSON.parse(params.sort) as Array<{
-          id: string;
-          direction: "asc" | "desc";
-        }>;
-        if (sortArray.length > 0) {
-          const sort = sortArray[0];
-          if (sort) {
-            const direction = sort.direction.toUpperCase();
-            if (sort.id === "name") {
-              orderBy = `ORDER BY name ${direction}`;
-            } else if (sort.id === "createdAt" || sort.id === "created_at") {
-              orderBy = `ORDER BY created_at ${direction}`;
-            } else if (sort.id === "updatedAt" || sort.id === "updated_at") {
-              orderBy = `ORDER BY updated_at ${direction}`;
-            }
-          }
-        }
-      } catch {
-        // Invalid sort - ignore
-      }
-    }
+    const { whereClause, orderBy, queryParams } = buildQuery({
+      searchFields: params?.search ? ["name", "id"] : [],
+      searchTerm: params?.search,
+      filters: params?.filters,
+      sort: params?.sort,
+      fieldToColumnMap: {
+        name: "name",
+        id: "id",
+        createdAt: "created_at",
+        created_at: "created_at",
+        updatedAt: "updated_at",
+        updated_at: "updated_at",
+      },
+    });
 
     // Get total count
     const countQuery = `SELECT COUNT(*) as total FROM stores ${whereClause}`;
