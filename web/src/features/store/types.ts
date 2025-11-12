@@ -47,6 +47,9 @@ export interface IStoreRepository {
     storeId: string,
     params?: ProductQueryParams
   ): Promise<ProductQueryResult>;
+  createStore(data: { name: string }): Promise<Store>;
+  updateStore(id: string, data: { name: string }): Promise<Store>;
+  deleteStore(id: string): Promise<void>;
 }
 
 export interface IStoreService {
@@ -56,4 +59,7 @@ export interface IStoreService {
     storeId: string,
     params?: ProductQueryParams
   ): Promise<ProductQueryResult>;
+  createStore(data: { name: string }): Promise<Store>;
+  updateStore(id: string, data: { name: string }): Promise<Store>;
+  deleteStore(id: string): Promise<void>;
 }

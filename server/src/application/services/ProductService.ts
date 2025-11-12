@@ -16,6 +16,12 @@ export class ProductService {
     return this.productRepository.findAll();
   }
 
+  async getAllProductsWithParams(
+    params?: ProductQueryParams
+  ): Promise<ProductQueryResult> {
+    return this.productRepository.findAllWithParams(params);
+  }
+
   async getProductById(id: string): Promise<Product | null> {
     const productId = createProductId(id);
     return this.productRepository.findById(productId);

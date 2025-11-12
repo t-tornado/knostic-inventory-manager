@@ -17,8 +17,9 @@ import type {
 import { StoreTableHeaderActions } from "../components";
 import type { Store, StoreId } from "@/core/models/store/model";
 import { EditStoreModal } from "@/shared/components/EditStoreModal";
-import { StoreId as StoreIdComponent } from "../components/ui";
+import { StoreId as StoreIdComponent } from "../components/atoms";
 import { storeService } from "../service";
+import { useUpdateStore, useDeleteStore } from "../hooks";
 
 // Define the table schema for stores
 const storesSchema: TableSchema = {
@@ -108,20 +109,35 @@ export const StoreList = () => {
     setSelectedStore(null);
   };
 
-  const handleSaveStore = (store: Store) => {
-    if (selectedStore) {
-      tableRef.current?.updateRow(store.id, store);
-    } else {
-      tableRef.current?.upsertRow(store.id, store);
+  const updateStoreMutation = useUpdateStore();
+  const deleteStoreMutation = useDeleteStore();
+
+  const handleSaveStore = async (store: Store) => {
+    try {
+      if (selectedStore) {
+        await updateStoreMutation.mutateAsync({
+          id: store.id,
+          data: { name: store.name },
+        });
+        tableRef.current?.updateRow(store.id, store);
+      } else {
+        // TODO: Implement create store mutation
+        tableRef.current?.upsertRow(store.id, store);
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error("Failed to save store:", error);
     }
-    handleCloseModal();
-    // Table will automatically refetch on next interaction
   };
 
-  const handleDeleteStore = (storeId: StoreId) => {
-    tableRef.current?.deleteRow(storeId);
-    handleCloseModal();
-    // Table will automatically refetch on next interaction
+  const handleDeleteStore = async (storeId: StoreId) => {
+    try {
+      await deleteStoreMutation.mutateAsync(storeId);
+      tableRef.current?.deleteRow(storeId);
+      handleCloseModal();
+    } catch (error) {
+      console.error("Failed to delete store:", error);
+    }
   };
 
   const handleOnClickStoreId = (

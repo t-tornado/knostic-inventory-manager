@@ -7,6 +7,7 @@ import type {
   ProductQueryParams,
   ProductQueryResult,
 } from "./types";
+import type { Store } from "@/core/models/store/model";
 import { ApiResponse } from "@/shared/api";
 
 export function createStoreRepository(
@@ -113,6 +114,57 @@ export function createStoreRepository(
       }
 
       return response.data;
+    },
+
+    async createStore(data: { name: string }): Promise<Store> {
+      const url = `/stores`;
+
+      const response = await apiClient.post<ApiResponse<Store>>(url, data);
+
+      if (response.errors && response.errors.length > 0) {
+        throw new Error(
+          response.errors.map((err) => err.message).join(", ") ||
+            "Failed to create store"
+        );
+      }
+
+      if (!response.data) {
+        throw new Error("No data returned from create store API");
+      }
+
+      return response.data;
+    },
+
+    async updateStore(id: string, data: { name: string }): Promise<Store> {
+      const url = `/stores/${id}`;
+
+      const response = await apiClient.put<ApiResponse<Store>>(url, data);
+
+      if (response.errors && response.errors.length > 0) {
+        throw new Error(
+          response.errors.map((err) => err.message).join(", ") ||
+            "Failed to update store"
+        );
+      }
+
+      if (!response.data) {
+        throw new Error("No data returned from update store API");
+      }
+
+      return response.data;
+    },
+
+    async deleteStore(id: string): Promise<void> {
+      const url = `/stores/${id}`;
+
+      const response = await apiClient.delete<ApiResponse<void>>(url);
+
+      if (response.errors && response.errors.length > 0) {
+        throw new Error(
+          response.errors.map((err) => err.message).join(", ") ||
+            "Failed to delete store"
+        );
+      }
     },
   };
 }

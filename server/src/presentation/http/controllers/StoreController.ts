@@ -1,4 +1,4 @@
-import type { IHttpRequest, IHttpResponse } from "../IHttpServer";
+import type { Request, Response } from "express";
 import type { StoreService } from "../../../application/services/StoreService";
 import { successResponse, errorResponse } from "../types";
 import {
@@ -11,35 +11,11 @@ import { apiPath } from "../../../shared/config/apiVersion";
 export class StoreController {
   constructor(private storeService: StoreService) {}
 
-  async getAllStores(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async getAllStores(req: Request, res: Response): Promise<void> {
     const path = apiPath("/stores");
     try {
-      // Parse query parameters
-      const queryParams: {
-        search?: string;
-        filters?: string;
-        sort?: string;
-        page?: number;
-        pageSize?: number;
-      } = {};
-
-      if (req.query.search) {
-        queryParams.search = req.query.search as string;
-      }
-      if (req.query.filters) {
-        queryParams.filters = req.query.filters as string;
-      }
-      if (req.query.sort) {
-        queryParams.sort = req.query.sort as string;
-      }
-      if (req.query.page) {
-        queryParams.page = parseInt(req.query.page as string, 10);
-      }
-      if (req.query.pageSize) {
-        queryParams.pageSize = parseInt(req.query.pageSize as string, 10);
-      }
-
-      const result = await this.storeService.getAllStores(queryParams);
+      const validatedParams = (req as any).validatedTableQuery || {};
+      const result = await this.storeService.getAllStores(validatedParams);
       const response = successResponse(result, path, "GET");
       res.status(200).json(response);
     } catch (error) {
@@ -58,7 +34,7 @@ export class StoreController {
     }
   }
 
-  async getStoreById(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async getStoreById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}`);
 
@@ -114,7 +90,7 @@ export class StoreController {
     }
   }
 
-  async getStoreDetails(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async getStoreDetails(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}/details`);
 
@@ -170,7 +146,7 @@ export class StoreController {
     }
   }
 
-  async createStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async createStore(req: Request, res: Response): Promise<void> {
     const path = apiPath("/stores");
     const { name } = req.body as { name?: string };
 
@@ -211,7 +187,7 @@ export class StoreController {
     }
   }
 
-  async updateStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async updateStore(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}`);
     const { name } = req.body as { name?: string };
@@ -266,7 +242,7 @@ export class StoreController {
     }
   }
 
-  async deleteStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async deleteStore(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}`);
 

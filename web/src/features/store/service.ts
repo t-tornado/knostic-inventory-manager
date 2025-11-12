@@ -20,6 +20,15 @@ export function createStoreService(
     async getStoreProducts(storeId: string, params?: ProductQueryParams) {
       return repository.getStoreProducts(storeId, params);
     },
+    async createStore(data: { name: string }) {
+      return repository.createStore(data);
+    },
+    async updateStore(id: string, data: { name: string }) {
+      return repository.updateStore(id, data);
+    },
+    async deleteStore(id: string) {
+      return repository.deleteStore(id);
+    },
   };
 }
 

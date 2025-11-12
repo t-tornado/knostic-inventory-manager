@@ -7,8 +7,7 @@ import type { Product, ProductId } from "../../domain/entities/Product";
 import type { StoreId } from "../../domain/entities/Store";
 import type { ISODateTime, Price } from "../../domain/entities/ValueObject";
 import type { IDatabase } from "../../infrastructure/database";
-import { buildFilterConditions } from "./filterBuilder";
-import type { Filter } from "../../domain/repositories/filterTypes";
+import { buildQuery } from "./queryBuilder";
 
 interface ProductRow {
   id: string;
@@ -44,6 +43,53 @@ export class ProductRepository implements IProductRepository {
     return rows.map((row) => this.rowToEntity(row));
   }
 
+  async findAllWithParams(
+    params?: ProductQueryParams
+  ): Promise<ProductQueryResult> {
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 25;
+    const offset = (page - 1) * pageSize;
+
+    const { whereClause, orderBy, queryParams } = buildQuery({
+      searchFields: params?.search ? ["name", "category", "id"] : [],
+      searchTerm: params?.search,
+      filters: params?.filters,
+      sort: params?.sort,
+      fieldToColumnMap: {
+        name: "name",
+        category: "category",
+        stockQuantity: "stock_quantity",
+        stock_quantity: "stock_quantity",
+        price: "price",
+        createdAt: "created_at",
+        created_at: "created_at",
+        updatedAt: "updated_at",
+        updated_at: "updated_at",
+      },
+    });
+
+    const countQuery = `SELECT COUNT(*) as total FROM products ${whereClause}`;
+    const countResult = await this.db.query<{ total: number }>(
+      countQuery,
+      queryParams
+    );
+    const total = countResult[0]?.total || 0;
+
+    const dataQuery = `SELECT * FROM products ${whereClause} ${orderBy} LIMIT ? OFFSET ?`;
+    const rows = await this.db.query<ProductRow>(dataQuery, [
+      ...queryParams,
+      pageSize,
+      offset,
+    ]);
+
+    return {
+      data: rows.map((row) => this.rowToEntity(row)),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
   async findById(id: ProductId): Promise<Product | null> {
     const rows = await this.db.query<ProductRow>(
       "SELECT * FROM products WHERE id = ?",
@@ -71,70 +117,46 @@ export class ProductRepository implements IProductRepository {
     const pageSize = params?.pageSize || 25;
     const offset = (page - 1) * pageSize;
 
-    const conditions: string[] = ["store_id = ?"];
-    const queryParams: unknown[] = [storeId];
+    const {
+      whereClause: baseWhereClause,
+      orderBy,
+      queryParams,
+    } = buildQuery({
+      searchFields: params?.search ? ["name", "category", "id"] : [],
+      searchTerm: params?.search,
+      filters: params?.filters,
+      sort: params?.sort,
+      fieldToColumnMap: {
+        name: "name",
+        category: "category",
+        stockQuantity: "stock_quantity",
+        stock_quantity: "stock_quantity",
+        price: "price",
+        createdAt: "created_at",
+        created_at: "created_at",
+        updatedAt: "updated_at",
+        updated_at: "updated_at",
+      },
+    });
 
-    if (params?.search) {
-      conditions.push("(name LIKE ? OR category LIKE ? OR id LIKE ?)");
-      const searchTerm = `%${params.search}%`;
-      queryParams.push(searchTerm, searchTerm, searchTerm);
-    }
-
-    if (params?.filters) {
-      try {
-        const filters = JSON.parse(params.filters) as Filter[];
-        const filterConditions = buildFilterConditions(filters, queryParams);
-        if (filterConditions) {
-          conditions.push(filterConditions);
-        }
-      } catch (error) {
-        console.error("Failed to parse filters:", error);
-      }
-    }
-
-    const whereClause = `WHERE ${conditions.join(" AND ")}`;
-
-    let orderBy = "ORDER BY created_at DESC";
-    if (params?.sort) {
-      try {
-        const sortArray = JSON.parse(params.sort) as Array<{
-          id: string;
-          direction: "asc" | "desc";
-        }>;
-        if (sortArray.length > 0) {
-          const sort = sortArray[0];
-          if (sort) {
-            const direction = sort.direction.toUpperCase();
-            const fieldMap: Record<string, string> = {
-              name: "name",
-              category: "category",
-              stockQuantity: "stock_quantity",
-              stock_quantity: "stock_quantity",
-              price: "price",
-              createdAt: "created_at",
-              created_at: "created_at",
-              updatedAt: "updated_at",
-              updated_at: "updated_at",
-            };
-            const column = fieldMap[sort.id] || sort.id;
-            if (column) {
-              orderBy = `ORDER BY ${column} ${direction}`;
-            }
-          }
-        }
-      } catch {}
-    }
+    // Add store_id condition
+    const storeCondition = "store_id = ?";
+    const whereClause =
+      baseWhereClause.length > 0
+        ? `${baseWhereClause} AND ${storeCondition}`
+        : `WHERE ${storeCondition}`;
+    const allParams = [...queryParams, storeId];
 
     const countQuery = `SELECT COUNT(*) as total FROM products ${whereClause}`;
     const countResult = await this.db.query<{ total: number }>(
       countQuery,
-      queryParams
+      allParams
     );
     const total = countResult[0]?.total || 0;
 
     const dataQuery = `SELECT * FROM products ${whereClause} ${orderBy} LIMIT ? OFFSET ?`;
     const rows = await this.db.query<ProductRow>(dataQuery, [
-      ...queryParams,
+      ...allParams,
       pageSize,
       offset,
     ]);

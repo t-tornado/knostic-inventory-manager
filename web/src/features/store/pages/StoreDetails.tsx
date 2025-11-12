@@ -26,22 +26,22 @@ import {
   StoreInfoActions,
   StoreStats,
   StoreStat,
-} from "../components/ui";
+} from "../components/atoms";
 import { Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningIcon from "@mui/icons-material/Warning";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import type { ISODateTime } from "@/core/models/ValueObjects";
 import { EditProductModal } from "@/shared/components/EditProductModal";
 import { EditStoreModal } from "@/shared/components/EditStoreModal";
 import type { ProductWithStoreName } from "@/features/product/types";
-import type { Store as StoreModel } from "@/core/models/store/model";
-import { useStoreDetails } from "../hooks";
+import { useStoreDetails, useUpdateStore, useDeleteStore } from "../hooks";
+import { useUpdateProduct, useDeleteProduct } from "@/features/product/hooks";
 import { storeService } from "../service";
 import { PageError } from "@/shared/components/PageError";
 import { PageLoader } from "@/shared/components/PageLoader";
+import type { Store } from "@/core/models/store/model";
 
 const storeProductsSchema: TableSchema = {
   products: {
@@ -171,32 +171,61 @@ export const StoreDetails = () => {
     setSelectedProduct(null);
   };
 
-  const handleSaveProduct = (updatedProduct: ProductWithStoreName) => {
-    const payload: ProductWithStoreName = {
-      ...updatedProduct,
-      updatedAt: new Date().toISOString() as ISODateTime,
-    };
-    tableRef.current?.updateRow(payload.id, payload);
-    handleCloseDetail();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  const updateStoreMutation = useUpdateStore();
+  const deleteStoreMutation = useDeleteStore();
+
+  const handleSaveProduct = async (updatedProduct: ProductWithStoreName) => {
+    try {
+      await updateProductMutation.mutateAsync({
+        id: updatedProduct.id,
+        data: {
+          storeId: updatedProduct.storeId,
+          name: updatedProduct.name,
+          category: updatedProduct.category,
+          stockQuantity: updatedProduct.stockQuantity,
+          price: updatedProduct.price,
+        },
+      });
+      tableRef.current?.updateRow(updatedProduct.id, updatedProduct);
+      handleCloseDetail();
+    } catch (error) {
+      console.error("Failed to update product:", error);
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    tableRef.current?.deleteRow(productId);
-    handleCloseDetail();
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProductMutation.mutateAsync(productId);
+      tableRef.current?.deleteRow(productId);
+      handleCloseDetail();
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+    }
   };
 
-  const handleSaveStoreInfo = async (_updatedStore: StoreModel) => {
-    // TODO: Call API to update store
-    // For now, just refetch store details
-    await refetchStoreDetails();
-    setStoreModalOpen(false);
+  const handleSaveStoreInfo = async (store: Store) => {
+    try {
+      await updateStoreMutation.mutateAsync({
+        id: store.id,
+        data: { name: store.name },
+      });
+      await refetchStoreDetails();
+      setStoreModalOpen(false);
+    } catch (error) {
+      console.error("Failed to update store:", error);
+    }
   };
 
-  const handleDeleteStoreInfo = async (_targetStoreId: string) => {
-    // TODO: Call API to delete store
-    // For now, just navigate away
-    setStoreModalOpen(false);
-    navigate("/stores");
+  const handleDeleteStoreInfo = async (storeId: string) => {
+    try {
+      await deleteStoreMutation.mutateAsync(storeId);
+      setStoreModalOpen(false);
+      navigate("/stores");
+    } catch (error) {
+      console.error("Failed to delete store:", error);
+    }
   };
 
   // Get store options for product modal - we'll need to fetch all stores

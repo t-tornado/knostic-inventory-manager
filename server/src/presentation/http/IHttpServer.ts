@@ -1,36 +1,28 @@
 /**
  * HTTP Server abstraction interface
- * Allows swapping Express with Fastify, Koa, etc.
+ *
+ * NOTE: Currently using Express types directly (Request, Response) instead of
+ * abstract interfaces (IHttpRequest, IHttpResponse) for performance and simplicity.
+ * This creates a framework dependency on Express, but removes adapter overhead on every request.
+ *
+ * If framework-agnostic support is needed in the future, we can reintroduce
+ * the abstraction layer with IHttpRequest/IHttpResponse interfaces and adapters.
  */
-export interface IHttpRequest {
-  body: unknown;
-  params: Record<string, string>;
-  query: Record<string, string | string[] | undefined>;
-  headers: Record<string, string | string[] | undefined>;
-}
+import type { Request, Response, NextFunction } from "express";
 
-export interface IHttpResponse {
-  status(code: number): IHttpResponse;
-  json(data: unknown): IHttpResponse;
-  send(data: string): IHttpResponse;
-  header(name: string, value: string): IHttpResponse;
-}
+export type HttpHandler = (req: Request, res: Response) => Promise<void> | void;
 
-export type HttpHandler = (
-  req: IHttpRequest,
-  res: IHttpResponse
-) => Promise<void> | void;
 export type HttpMiddleware = (
-  req: IHttpRequest,
-  res: IHttpResponse,
-  next: () => void
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => Promise<void> | void;
 
 export interface IHttpServer {
-  get(path: string, handler: HttpHandler): void;
-  post(path: string, handler: HttpHandler): void;
-  put(path: string, handler: HttpHandler): void;
-  delete(path: string, handler: HttpHandler): void;
+  get(path: string, ...handlers: (HttpMiddleware | HttpHandler)[]): void;
+  post(path: string, ...handlers: (HttpMiddleware | HttpHandler)[]): void;
+  put(path: string, ...handlers: (HttpMiddleware | HttpHandler)[]): void;
+  delete(path: string, ...handlers: (HttpMiddleware | HttpHandler)[]): void;
   use(middleware: HttpMiddleware): void;
   listen(port: number, callback?: () => void): void;
 }

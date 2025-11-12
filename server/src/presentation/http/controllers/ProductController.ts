@@ -1,4 +1,4 @@
-import type { IHttpRequest, IHttpResponse } from "../IHttpServer";
+import type { Request, Response } from "express";
 import type { ProductService } from "../../../application/services/ProductService";
 import { successResponse, errorResponse } from "../types";
 import {
@@ -11,12 +11,27 @@ import { apiPath } from "../../../shared/config/apiVersion";
 export class ProductController {
   constructor(private productService: ProductService) {}
 
-  async getAllProducts(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async getAllProducts(req: Request, res: Response): Promise<void> {
     const path = apiPath("/products");
     try {
-      const products = await this.productService.getAllProducts();
-      const response = successResponse(products, path, "GET");
-      res.status(200).json(response);
+      const validatedParams = (req as any).validatedTableQuery || {};
+
+      if (
+        !validatedParams.search &&
+        !validatedParams.filters &&
+        !validatedParams.sort &&
+        !validatedParams.page &&
+        !validatedParams.pageSize
+      ) {
+        const products = await this.productService.getAllProducts();
+        const response = successResponse(products, path, "GET");
+        res.status(200).json(response);
+      } else {
+        const result =
+          await this.productService.getAllProductsWithParams(validatedParams);
+        const response = successResponse(result, path, "GET");
+        res.status(200).json(response);
+      }
     } catch (error) {
       const response = errorResponse(
         [
@@ -33,7 +48,7 @@ export class ProductController {
     }
   }
 
-  async getProductById(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async getProductById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/products/${id}`);
 
@@ -89,10 +104,7 @@ export class ProductController {
     }
   }
 
-  async getProductsByStoreId(
-    req: IHttpRequest,
-    res: IHttpResponse
-  ): Promise<void> {
+  async getProductsByStoreId(req: Request, res: Response): Promise<void> {
     const { storeId } = req.params;
     const path = apiPath(`/stores/${storeId}/products`);
 
@@ -113,38 +125,14 @@ export class ProductController {
     }
 
     try {
-      // Parse query parameters
-      const queryParams: {
-        search?: string;
-        filters?: string;
-        sort?: string;
-        page?: number;
-        pageSize?: number;
-      } = {};
+      const validatedParams = (req as any).validatedTableQuery || {};
 
-      if (req.query.search) {
-        queryParams.search = req.query.search as string;
-      }
-      if (req.query.filters) {
-        queryParams.filters = req.query.filters as string;
-      }
-      if (req.query.sort) {
-        queryParams.sort = req.query.sort as string;
-      }
-      if (req.query.page) {
-        queryParams.page = parseInt(req.query.page as string, 10);
-      }
-      if (req.query.pageSize) {
-        queryParams.pageSize = parseInt(req.query.pageSize as string, 10);
-      }
-
-      // If no query params, use simple method for backward compatibility
       if (
-        !queryParams.search &&
-        !queryParams.filters &&
-        !queryParams.sort &&
-        !queryParams.page &&
-        !queryParams.pageSize
+        !validatedParams.search &&
+        !validatedParams.filters &&
+        !validatedParams.sort &&
+        !validatedParams.page &&
+        !validatedParams.pageSize
       ) {
         const products =
           await this.productService.getProductsByStoreId(storeId);
@@ -153,7 +141,7 @@ export class ProductController {
       } else {
         const result = await this.productService.getProductsByStoreIdWithParams(
           storeId,
-          queryParams
+          validatedParams
         );
         const response = successResponse(result, path, "GET");
         res.status(200).json(response);
@@ -174,7 +162,7 @@ export class ProductController {
     }
   }
 
-  async createProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async createProduct(req: Request, res: Response): Promise<void> {
     const path = apiPath("/products");
     const body = req.body as {
       storeId?: string;
@@ -263,7 +251,7 @@ export class ProductController {
     }
   }
 
-  async updateProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async updateProduct(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/products/${id}`);
     const body = req.body as {
@@ -328,7 +316,7 @@ export class ProductController {
     }
   }
 
-  async deleteProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+  async deleteProduct(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/products/${id}`);
 

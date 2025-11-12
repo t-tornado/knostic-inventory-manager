@@ -18,6 +18,7 @@ export interface ProductQueryResult {
 
 export interface IProductRepository {
   findAll(): Promise<Product[]>;
+  findAllWithParams(params?: ProductQueryParams): Promise<ProductQueryResult>;
   findById(id: ProductId): Promise<Product | null>;
   findByStoreId(storeId: StoreId): Promise<Product[]>;
   findByStoreIdWithParams(
