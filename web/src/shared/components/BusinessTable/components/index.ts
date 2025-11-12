@@ -7,3 +7,5 @@ export * from "./ColumnPanel";
 export * from "./ColumnPopover";
 export * from "./Table";
 export * from "./TablePagination";
+export * from "./TableErrorFallback";
+export * from "./TableEmptyFallback";

@@ -14,8 +14,33 @@ export class StoreController {
   async getAllStores(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const path = apiPath("/stores");
     try {
-      const stores = await this.storeService.getAllStores();
-      const response = successResponse(stores, path, "GET");
+      // Parse query parameters
+      const queryParams: {
+        search?: string;
+        filters?: string;
+        sort?: string;
+        page?: number;
+        pageSize?: number;
+      } = {};
+
+      if (req.query.search) {
+        queryParams.search = req.query.search as string;
+      }
+      if (req.query.filters) {
+        queryParams.filters = req.query.filters as string;
+      }
+      if (req.query.sort) {
+        queryParams.sort = req.query.sort as string;
+      }
+      if (req.query.page) {
+        queryParams.page = parseInt(req.query.page as string, 10);
+      }
+      if (req.query.pageSize) {
+        queryParams.pageSize = parseInt(req.query.pageSize as string, 10);
+      }
+
+      const result = await this.storeService.getAllStores(queryParams);
+      const response = successResponse(result, path, "GET");
       res.status(200).json(response);
     } catch (error) {
       const response = errorResponse(

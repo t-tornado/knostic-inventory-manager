@@ -146,24 +146,6 @@ export const groupingActions = {
 };
 
 // ============================================================================
-// Loading/Error Actions
-// ============================================================================
-
-export const loadingActions = {
-  set: (loading: boolean): TableAction => ({
-    type: "LOADING_SET",
-    payload: loading,
-  }),
-};
-
-export const errorActions = {
-  set: (error: Error | null): TableAction => ({
-    type: "ERROR_SET",
-    payload: error,
-  }),
-};
-
-// ============================================================================
 // State Management Actions
 // ============================================================================
 

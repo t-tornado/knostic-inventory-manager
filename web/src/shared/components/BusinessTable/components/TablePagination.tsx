@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Box,
   Pagination,
@@ -17,7 +18,9 @@ interface TablePaginationProps {
   };
 }
 
-export function TablePagination({ meta }: TablePaginationProps) {
+export const TablePagination = memo(function TablePagination({
+  meta,
+}: TablePaginationProps) {
   const { pagination, setPage, setPageSize, currentPage, totalPages } =
     usePagination();
 
@@ -68,4 +71,4 @@ export function TablePagination({ meta }: TablePaginationProps) {
       />
     </Box>
   );
-}
+});

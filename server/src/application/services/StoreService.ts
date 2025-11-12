@@ -1,4 +1,8 @@
-import type { IStoreRepository } from "../../domain/repositories/IStoreRepository";
+import type {
+  IStoreRepository,
+  StoreQueryParams,
+  StoreQueryResult,
+} from "../../domain/repositories/IStoreRepository";
 import type { IProductRepository } from "../../domain/repositories/IProductRepository";
 import type { Store, StoreId } from "../../domain/entities/Store";
 import { createStoreId } from "../../domain/entities/Store";
@@ -9,8 +13,8 @@ export class StoreService {
     private productRepository: IProductRepository
   ) {}
 
-  async getAllStores(): Promise<Store[]> {
-    return this.storeRepository.findAll();
+  async getAllStores(params?: StoreQueryParams): Promise<StoreQueryResult> {
+    return this.storeRepository.findAll(params);
   }
 
   async getStoreById(id: string): Promise<Store | null> {

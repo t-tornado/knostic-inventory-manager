@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/shared/components/PageLayout";
+import { PageError } from "@/shared/components/PageError";
 import StoreIcon from "@mui/icons-material/Store";
 import {
   BusinessTable,
@@ -16,8 +17,8 @@ import type {
 import { StoreTableHeaderActions } from "../components";
 import type { Store, StoreId } from "@/core/models/store/model";
 import { EditStoreModal } from "@/shared/components/EditStoreModal";
-import { storeSeedData } from "../data/stores";
 import { StoreId as StoreIdComponent } from "../components/ui";
+import { storeService } from "../service";
 
 // Define the table schema for stores
 const storesSchema: TableSchema = {
@@ -41,81 +42,46 @@ const storesSchema: TableSchema = {
   },
 };
 
-// Mock data service - replace with real API call later
-const getStoresData = async (
-  params: TableRequestParams
-): Promise<TableResponse> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
-  const mockStores: Store[] = storeSeedData.map((store) => ({ ...store }));
-
-  // Apply filters (simplified - in real app, this would be done server-side)
-  let filtered = [...mockStores];
-
-  if (params.search) {
-    const searchLower = params.search.toLowerCase();
-    filtered = filtered.filter((store) =>
-      store.name.toLowerCase().includes(searchLower)
-    );
-  }
-
-  if (params.filters) {
-    try {
-      const filters = JSON.parse(params.filters);
-      // Apply filter logic here
-      // This is simplified - real implementation would handle all operators
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      filters.forEach((_filter: any) => {
-        // TODO: Implement filter logic
-      });
-    } catch {
-      // Invalid filters - ignore
-    }
-  }
-
-  // Apply sorting
-  if (params.sort) {
-    try {
-      const sorting = JSON.parse(params.sort);
-      if (sorting.length > 0) {
-        const sort = sorting[0];
-        filtered.sort((a, b) => {
-          const aVal = (a as any)[sort.id];
-          const bVal = (b as any)[sort.id];
-          const multiplier = sort.direction === "asc" ? 1 : -1;
-          if (aVal < bVal) return -1 * multiplier;
-          if (aVal > bVal) return 1 * multiplier;
-          return 0;
-        });
-      }
-    } catch {
-      // Invalid sort - ignore
-    }
-  }
-
-  // Apply pagination
-  const page = params.page || 1;
-  const pageSize = params.pageSize || 25;
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const paginated = filtered.slice(start, end);
-
-  return {
-    data: paginated,
-    meta: {
-      total: filtered.length,
-      page,
-      pageSize,
-    },
-  };
-};
-
 export const StoreList = () => {
   const tableRef = useRef<BusinessTableHandle | null>(null);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  /**
+   * getStoresData receives all table state parameters from BusinessTable:
+   * - filters: JSON stringified array of filters
+   * - search: search keyword string
+   * - sort: JSON stringified array of sort configurations
+   * - page: 1-based page number
+   * - pageSize: number of items per page
+   *
+   * BusinessTable automatically encodes these from its internal state
+   * and passes them here whenever the table state changes (filters, search, pagination, sorting)
+   */
+  const getStoresData = useMemo(
+    () =>
+      async (params: TableRequestParams): Promise<TableResponse> => {
+        // Pass all data manipulation parameters to the service
+        const result = await storeService.getStores({
+          search: params.search,
+          filters: params.filters,
+          sort: params.sort,
+          page: params.page,
+          pageSize: params.pageSize,
+        });
+
+        return {
+          data: result.data,
+          meta: {
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+          },
+        };
+      },
+    []
+  );
 
   const handleExport = () => {
     console.log("Export stores");
@@ -145,20 +111,17 @@ export const StoreList = () => {
   const handleSaveStore = (store: Store) => {
     if (selectedStore) {
       tableRef.current?.updateRow(store.id, store);
-      const seedIndex = storeSeedData.findIndex((seed) => seed.id === store.id);
-      if (seedIndex >= 0) {
-        storeSeedData[seedIndex] = { ...storeSeedData[seedIndex], ...store };
-      }
     } else {
       tableRef.current?.upsertRow(store.id, store);
-      storeSeedData.push(store);
     }
     handleCloseModal();
+    // Table will automatically refetch on next interaction
   };
 
   const handleDeleteStore = (storeId: StoreId) => {
     tableRef.current?.deleteRow(storeId);
     handleCloseModal();
+    // Table will automatically refetch on next interaction
   };
 
   const handleOnClickStoreId = (
@@ -223,6 +186,17 @@ export const StoreList = () => {
         onRowClick={handleRowClick}
         onFiltersChange={handleFiltersChange}
         customization={tableCustomization}
+        slots={{
+          ErrorState: ({ error, refetch }) => (
+            <PageError
+              title='Failed to load stores'
+              message={
+                error.message || "Unable to fetch stores. Please try again."
+              }
+              onRetry={() => refetch()}
+            />
+          ),
+        }}
         features={{
           enableFiltering: true,
           enableSearching: true,

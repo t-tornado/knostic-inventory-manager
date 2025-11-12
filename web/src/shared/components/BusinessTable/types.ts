@@ -144,10 +144,6 @@ export interface TableState {
 
   // Grouping
   grouping: GroupingState;
-
-  // UI State
-  isLoading: boolean;
-  error: Error | null;
 }
 
 // ============================================================================
@@ -174,8 +170,6 @@ export type TableAction =
   | { type: "SELECTION_CLEAR" }
   | { type: "GROUPING_SET"; payload: string[] }
   | { type: "GROUPING_TOGGLE"; payload: string }
-  | { type: "LOADING_SET"; payload: boolean }
-  | { type: "ERROR_SET"; payload: Error | null }
   | { type: "STATE_RESET" }
   | { type: "STATE_RESTORE"; payload: Partial<TableState> };
 
@@ -253,7 +247,7 @@ export interface TableSlots {
   GroupingPanel?: React.ComponentType;
   EmptyState?: React.ComponentType;
   LoadingState?: React.ComponentType;
-  ErrorState?: React.ComponentType<{ error: Error }>;
+  ErrorState?: React.ComponentType<{ error: Error; refetch: () => void }>;
 }
 
 export interface TableConfig {

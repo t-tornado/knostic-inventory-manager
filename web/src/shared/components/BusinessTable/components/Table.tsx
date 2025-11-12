@@ -18,32 +18,32 @@ import type {
   MRT_SortingState,
   MRT_PaginationState,
 } from "material-react-table";
+import { TableErrorFallback } from "./TableErrorFallback";
+import { TableEmptyFallback } from "./TableEmptyFallback";
 
 interface TableProps {
   data: any[];
   isLoading: boolean;
+  error?: Error | null;
+  refetch?: () => void;
 }
 
-export function Table({ data, isLoading }: TableProps) {
+export function Table({ data, isLoading, error, refetch }: TableProps) {
   const { visibleColumns, columnSorting } = useColumns();
   const { state, dispatch, config, getRowId, onRowClick } = useTableState();
 
-  // Transform columns to MRT format
   const mrtColumns = useMemo<MRT_ColumnDef<any>[]>(() => {
     return transformColumnsToMRT(visibleColumns, config.customization);
   }, [visibleColumns, config.customization]);
 
-  // Transform sorting state
   const mrtSorting = useMemo<MRT_SortingState>(() => {
     return transformSortingToMRT(columnSorting);
   }, [columnSorting]);
 
-  // Transform pagination state
   const mrtPagination = useMemo<MRT_PaginationState>(() => {
     return transformPaginationToMRT(state.pagination);
   }, [state.pagination]);
 
-  // Handle sorting changes from MRT
   const handleSortingChange = (
     updater: MRT_SortingState | ((old: MRT_SortingState) => MRT_SortingState)
   ) => {
@@ -51,11 +51,9 @@ export function Table({ data, isLoading }: TableProps) {
       typeof updater === "function" ? updater(mrtSorting) : updater;
     const businessTableSorting = transformSortingFromMRT(newSorting);
 
-    // Update our state
     if (businessTableSorting.length === 0) {
       dispatch(columnActions.clearSort());
     } else {
-      // Apply the first sort (MRT supports multi-sort, but we'll use the first one)
       const firstSort = businessTableSorting[0];
       dispatch(
         columnActions.sort({ id: firstSort.id, direction: firstSort.direction })
@@ -63,7 +61,6 @@ export function Table({ data, isLoading }: TableProps) {
     }
   };
 
-  // Handle pagination changes from MRT
   const handlePaginationChange = (
     updater:
       | MRT_PaginationState
@@ -76,62 +73,69 @@ export function Table({ data, isLoading }: TableProps) {
       state.pagination.total
     );
 
-    // Update our state
     dispatch(paginationActions.setPage(businessTablePagination.pageIndex));
     dispatch(paginationActions.setPageSize(businessTablePagination.pageSize));
   };
 
-  // Configure MRT table
   const table = useMaterialReactTable({
     columns: mrtColumns,
     data: data,
     getRowId: getRowId
       ? (row) => {
-          // MRT passes the row data directly, not wrapped in an object
           if (!row) return String(Math.random());
           try {
             return String(getRowId(row));
           } catch {
-            // Fallback if getRowId fails
             return String((row as any)?.id ?? Math.random());
           }
         }
       : undefined,
-    enableColumnOrdering: false, // Disable column actions
+    enableColumnOrdering: false,
     enableSorting: config.features.enableColumnSorting !== false,
-    enableColumnFilters: false, // We use custom filtering
-    enableGlobalFilter: false, // We use custom search
-    enablePagination: false, // We handle pagination separately
-    enableRowSelection: false, // Row selection can be controlled via onRowSelect callback
-    manualSorting: true, // We handle sorting in our state
-    manualPagination: true, // We handle pagination in our state
+    enableColumnFilters: false,
+    enableGlobalFilter: false,
+    enablePagination: false,
+    enableRowSelection: false,
+    manualSorting: true,
+    manualPagination: true,
     enableTopToolbar: false,
     enableColumnDragging: false,
     enableColumnResizing: false,
-    enableColumnActions: false, // Disable column actions menu
+    enableColumnActions: false,
+    enableStickyHeader: true,
     state: {
       sorting: mrtSorting,
       pagination: mrtPagination,
       isLoading,
-      showProgressBars: isLoading,
     },
     onSortingChange: handleSortingChange,
     onPaginationChange: handlePaginationChange,
 
     muiTableContainerProps: {
       sx: {
-        maxHeight: "calc(100% - 16px)", // Account for padding
+        height: "100%",
+        maxHeight: "100%",
+        position: "relative",
       },
     },
     muiTablePaperProps: {
       elevation: 0,
       sx: {
         height: "100%",
+        minHeight: "100%",
         display: "flex",
         flexDirection: "column",
         boxShadow: "none",
+        position: "relative",
         "& .MuiBox-root": {
           backgroundColor: "background.default",
+        },
+        "& .MuiBackdrop-root": {
+          top: "56px",
+          height: "calc(100% - 56px)",
+        },
+        "& .MuiCircularProgress-root": {
+          position: "relative",
         },
       },
     },
@@ -147,6 +151,13 @@ export function Table({ data, isLoading }: TableProps) {
         },
         "& .MuiTableCell-head": {
           bgcolor: "background.default",
+          // Ensure header stays above loading overlay
+          position: "relative",
+          zIndex: 10,
+        },
+        "& .MuiTableHead-root": {
+          position: "relative",
+          zIndex: 10,
         },
       },
     },
@@ -154,6 +165,9 @@ export function Table({ data, isLoading }: TableProps) {
       sx: {
         fontWeight: "bold",
         bgcolor: "action.hover",
+        // Ensure header cells stay above loading overlay
+        position: "relative",
+        zIndex: 10,
       },
     },
     muiTableBodyRowProps: ({ row }) => ({
@@ -175,11 +189,20 @@ export function Table({ data, isLoading }: TableProps) {
           : {},
       },
     }),
-    layoutMode: "grid", // Use grid layout for better column sizing
+    layoutMode: "grid",
     defaultColumn: {
       minSize: 80,
       maxSize: 500,
       size: 150,
+    },
+    renderEmptyRowsFallback: () => {
+      if (error && data.length === 0) {
+        return <TableErrorFallback error={error} refetch={refetch} />;
+      }
+      if (!error && data.length === 0 && !isLoading) {
+        return <TableEmptyFallback />;
+      }
+      return null;
     },
   });
 

@@ -40,8 +40,6 @@ export const defaultTableState: TableState = {
     groupBy: [],
     expanded: new Set(),
   },
-  isLoading: false,
-  error: null,
 };
 
 export const defaultPageSizes = [10, 25, 50, 100];
