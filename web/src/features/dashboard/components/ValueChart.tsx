@@ -1,0 +1,149 @@
+import { useMemo, useState } from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+import type { ChartOptions } from "chart.js";
+import { useTheme } from "@mui/material";
+import { FilterButton } from "./ui";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const useValueChartPeriod = () => {
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("7d");
+  return { period, setPeriod };
+};
+
+export const ValueChartFilters = ({
+  period,
+  setPeriod,
+}: ReturnType<typeof useValueChartPeriod>) => {
+  return (
+    <>
+      <FilterButton active={period === "7d"} onClick={() => setPeriod("7d")}>
+        7D
+      </FilterButton>
+      <FilterButton active={period === "30d"} onClick={() => setPeriod("30d")}>
+        30D
+      </FilterButton>
+      <FilterButton active={period === "90d"} onClick={() => setPeriod("90d")}>
+        90D
+      </FilterButton>
+    </>
+  );
+};
+
+export const ValueChart = () => {
+  const theme = useTheme();
+
+  const data = useMemo(
+    () => ({
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          label: "Inventory Value",
+          data: [265000, 270000, 275000, 272000, 280000, 282000, 284592],
+          borderColor: theme.palette.success.main,
+          backgroundColor: `${theme.palette.success.main}33`,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: theme.palette.success.main,
+          pointBorderColor: theme.palette.background.paper,
+          pointBorderWidth: 2,
+        },
+      ],
+    }),
+    [theme]
+  );
+
+  const options: ChartOptions<"line"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor:
+            theme.palette.mode === "dark"
+              ? "rgba(30, 41, 59, 0.95)"
+              : "rgba(0, 0, 0, 0.8)",
+          padding: 12,
+          titleFont: {
+            size: 14,
+            weight: "bold",
+          },
+          bodyFont: {
+            size: 13,
+          },
+          titleColor: theme.palette.mode === "dark" ? "#f1f5f9" : "#ffffff",
+          bodyColor: theme.palette.mode === "dark" ? "#cbd5e1" : "#ffffff",
+          callbacks: {
+            label: function (context) {
+              const value = context.parsed.y;
+              return value !== null ? "$" + value.toLocaleString() : "";
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: {
+            color: theme.palette.divider,
+          },
+          ticks: {
+            font: {
+              size: 12,
+            },
+            color: theme.palette.text.secondary,
+            callback: function (value) {
+              return "$" + (value as number) / 1000 + "k";
+            },
+          },
+        },
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            font: {
+              size: 12,
+            },
+            color: theme.palette.text.secondary,
+          },
+        },
+      },
+    }),
+    [theme]
+  );
+
+  return <Line data={data} options={options} />;
+};
+
+// Export hook separately to avoid fast refresh warning
+// eslint-disable-next-line react-refresh/only-export-components
+export const useValueChart = () => {
+  return useValueChartPeriod();
+};
