@@ -14,8 +14,15 @@ function BusinessTableInner({
   onFiltersChange,
   tableRef,
 }: BusinessTableInnerProps) {
-  const { data, meta, isLoading, error, updateRowById, deleteRowById } =
-    useTableData();
+  const {
+    data,
+    meta,
+    isLoading,
+    error,
+    updateRowById,
+    upsertRowById,
+    deleteRowById,
+  } = useTableData();
   const { state } = useTableState();
   const previousFiltersRef = useRef<Filter[]>(state.filters);
 
@@ -23,9 +30,10 @@ function BusinessTableInner({
     tableRef,
     () => ({
       updateRow: updateRowById,
+      upsertRow: upsertRowById,
       deleteRow: deleteRowById,
     }),
-    [updateRowById, deleteRowById]
+    [updateRowById, upsertRowById, deleteRowById]
   );
 
   // Subscribe to filter changes
