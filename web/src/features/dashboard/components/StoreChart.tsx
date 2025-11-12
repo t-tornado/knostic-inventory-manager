@@ -43,33 +43,42 @@ export const StoreChartFilters = ({
   );
 };
 
-export const StoreChart = ({ view }: { view: "count" | "value" }) => {
+import type { StoreData } from "../types";
+
+interface StoreChartProps {
+  view: "count" | "value";
+  stores: StoreData[];
+}
+
+export const StoreChart = ({ view, stores }: StoreChartProps) => {
   const theme = useTheme();
 
-  const data = useMemo(
-    () => ({
-      labels: [
-        "Main Store",
-        "Downtown",
-        "Tech Hub",
-        "West Branch",
-        "East Branch",
-      ],
+  const chartData = useMemo(() => {
+    // Sort stores by the selected view and take top 5
+    const sortedStores = [...stores].sort((a, b) => {
+      if (view === "count") {
+        return b.productCount - a.productCount;
+      }
+      return b.inventoryValue - a.inventoryValue;
+    });
+
+    const topStores = sortedStores.slice(0, 5);
+
+    return {
+      labels: topStores.map((store) => store.storeName),
       datasets: [
         {
           label: view === "count" ? "Product Count" : "Inventory Value",
-          data:
-            view === "count"
-              ? [320, 280, 245, 195, 150]
-              : [85000, 72000, 65000, 52000, 40000],
+          data: topStores.map((store) =>
+            view === "count" ? store.productCount : store.inventoryValue
+          ),
           backgroundColor: theme.palette.primary.main,
           borderRadius: 8,
           borderSkipped: false,
         },
       ],
-    }),
-    [theme, view]
-  );
+    };
+  }, [stores, view, theme]);
 
   const options: ChartOptions<"bar"> = useMemo(
     () => ({
@@ -141,7 +150,23 @@ export const StoreChart = ({ view }: { view: "count" | "value" }) => {
     [theme, view]
   );
 
-  return <Bar data={data} options={options} />;
+  if (stores.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "300px",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        No store data available
+      </div>
+    );
+  }
+
+  return <Bar data={chartData} options={options} />;
 };
 
 // Export hook separately to avoid fast refresh warning

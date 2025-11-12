@@ -50,16 +50,32 @@ export const ValueChartFilters = ({
   );
 };
 
-export const ValueChart = () => {
+import type { InventoryValueData } from "../types";
+
+interface ValueChartProps {
+  period: "7d" | "30d" | "90d";
+  inventoryValue: InventoryValueData[];
+}
+
+export const ValueChart = ({ inventoryValue }: ValueChartProps) => {
   const theme = useTheme();
 
-  const data = useMemo(
-    () => ({
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  const chartData = useMemo(() => {
+    // Format dates for labels
+    const labels = inventoryValue.map((item) => {
+      const date = new Date(item.date);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    });
+
+    return {
+      labels,
       datasets: [
         {
           label: "Inventory Value",
-          data: [265000, 270000, 275000, 272000, 280000, 282000, 284592],
+          data: inventoryValue.map((item) => item.totalValue),
           borderColor: theme.palette.success.main,
           backgroundColor: `${theme.palette.success.main}33`,
           borderWidth: 3,
@@ -72,9 +88,8 @@ export const ValueChart = () => {
           pointBorderWidth: 2,
         },
       ],
-    }),
-    [theme]
-  );
+    };
+  }, [inventoryValue, theme]);
 
   const options: ChartOptions<"line"> = useMemo(
     () => ({
@@ -139,7 +154,23 @@ export const ValueChart = () => {
     [theme]
   );
 
-  return <Line data={data} options={options} />;
+  if (inventoryValue.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "300px",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        No inventory value data available
+      </div>
+    );
+  }
+
+  return <Line data={chartData} options={options} />;
 };
 
 // Export hook separately to avoid fast refresh warning
