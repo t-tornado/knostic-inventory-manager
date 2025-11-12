@@ -1,7 +1,19 @@
+import { PageLayout } from "@/app/layout";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import {
+  StatsGrid,
+  ChartsGrid,
+  AlertsSection,
+  ActivitySection,
+} from "../components";
+
 export const DashboardPage = () => {
   return (
-    <div>
-      <h1>Dashboard Page</h1>
-    </div>
+    <PageLayout title='Inventory Dashboard' headerIcon={<ShowChartIcon />}>
+      <StatsGrid />
+      <ChartsGrid />
+      <AlertsSection />
+      <ActivitySection />
+    </PageLayout>
   );
 };

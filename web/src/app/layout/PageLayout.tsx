@@ -21,8 +21,9 @@ export const PageLayout = ({
     <Box
       sx={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
         bgcolor: "background.default",
+        overflow: "hidden",
       }}
     >
       <Sidebar />
@@ -32,6 +33,9 @@ export const PageLayout = ({
           flexGrow: 1,
           width: `100%`,
           ml: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
           transition: theme.transitions.create(["margin", "width"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
@@ -41,12 +45,26 @@ export const PageLayout = ({
         <Box
           sx={{
             maxWidth: 1600,
+            width: "100%",
             mx: "auto",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
             p: 3,
           }}
         >
           <Header title={title} icon={headerIcon} actions={headerActions} />
-          <Box>{children}</Box>
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+              minHeight: 0,
+            }}
+          >
+            {children}
+          </Box>
         </Box>
       </Box>
     </Box>
