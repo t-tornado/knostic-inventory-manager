@@ -1,40 +1,48 @@
+import { Box, Typography } from "@mui/material";
 import { SectionCard, SectionHeader, AlertItem } from "./ui";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import type { LowStockAlert } from "../types";
 
-export const AlertsSection = () => {
-  const alerts = [
-    {
-      title: 'Laptop Pro 15" - Only 3 units remaining',
-      description:
-        "Store: Downtown Branch • Category: Electronics • Current Stock: 3",
-    },
-    {
-      title: "Wireless Mouse - Only 5 units remaining",
-      description:
-        "Store: Main Store • Category: Accessories • Current Stock: 5",
-    },
-    {
-      title: "USB-C Cable - Only 2 units remaining",
-      description: "Store: Tech Hub • Category: Cables • Current Stock: 2",
-    },
-  ];
+interface AlertsSectionProps {
+  alerts: LowStockAlert[];
+}
 
-  const handleRestock = (title: string) => {
-    console.log("Restocking:", title);
-    // TODO: Implement restock functionality
-  };
+export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
+  if (alerts.length === 0) {
+    return (
+      <SectionCard>
+        <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
+        <Typography
+          variant='body2'
+          color='text.secondary'
+          sx={{ p: 2, textAlign: "center" }}
+        >
+          No low stock alerts at this time.
+        </Typography>
+      </SectionCard>
+    );
+  }
 
   return (
     <SectionCard>
       <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
-      {alerts.map((alert, index) => (
-        <AlertItem
-          key={index}
-          title={alert.title}
-          description={alert.description}
-          onAction={() => handleRestock(alert.title)}
-        />
-      ))}
+      <Box
+        sx={{
+          maxHeight: "400px",
+          overflowY: "auto",
+          mt: 2,
+        }}
+      >
+        {alerts.map((alert) => (
+          <AlertItem
+            key={`${alert.productId}-${alert.storeId}`}
+            title={`${alert.productName} - Only ${alert.stockQuantity} unit${
+              alert.stockQuantity !== 1 ? "s" : ""
+            } remaining`}
+            description={`Store: ${alert.storeName} • Category: ${alert.category} • Current Stock: ${alert.stockQuantity}`}
+          />
+        ))}
+      </Box>
     </SectionCard>
   );
 };

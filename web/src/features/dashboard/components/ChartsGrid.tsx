@@ -8,8 +8,26 @@ import { CategoryChart } from "./CategoryChart";
 import { StockChart, StockChartFilters, useStockChart } from "./StockChart";
 import { StoreChart, StoreChartFilters, useStoreChart } from "./StoreChart";
 import { ValueChart, ValueChartFilters, useValueChart } from "./ValueChart";
+import type {
+  CategoryData,
+  StoreData,
+  StockLevelData,
+  InventoryValueData,
+} from "../types";
 
-export const ChartsGrid = () => {
+interface ChartsGridProps {
+  categories: CategoryData[];
+  stores: StoreData[];
+  stockLevels: StockLevelData[];
+  inventoryValue: InventoryValueData[];
+}
+
+export const ChartsGrid = ({
+  categories,
+  stores,
+  stockLevels,
+  inventoryValue,
+}: ChartsGridProps) => {
   const stockChartState = useStockChart();
   const storeChartState = useStoreChart();
   const valueChartState = useValueChart();
@@ -28,7 +46,7 @@ export const ChartsGrid = () => {
     >
       <Box>
         <ChartCard title='Products by Category' icon={<PieChartIcon />}>
-          <CategoryChart />
+          <CategoryChart categories={categories} />
         </ChartCard>
       </Box>
       <Box>
@@ -37,7 +55,10 @@ export const ChartsGrid = () => {
           icon={<ShowChartIcon />}
           actions={<StockChartFilters {...stockChartState} />}
         >
-          <StockChart period={stockChartState.period} />
+          <StockChart
+            period={stockChartState.period}
+            stockLevels={stockLevels}
+          />
         </ChartCard>
       </Box>
       <Box>
@@ -46,7 +67,7 @@ export const ChartsGrid = () => {
           icon={<BarChartIcon />}
           actions={<StoreChartFilters {...storeChartState} />}
         >
-          <StoreChart view={storeChartState.view} />
+          <StoreChart view={storeChartState.view} stores={stores} />
         </ChartCard>
       </Box>
       <Box>
@@ -55,7 +76,10 @@ export const ChartsGrid = () => {
           icon={<AreaChartIcon />}
           actions={<ValueChartFilters {...valueChartState} />}
         >
-          <ValueChart />
+          <ValueChart
+            period={valueChartState.period}
+            inventoryValue={inventoryValue}
+          />
         </ChartCard>
       </Box>
     </Box>

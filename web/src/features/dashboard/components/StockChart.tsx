@@ -50,16 +50,32 @@ export const StockChartFilters = ({
   );
 };
 
-export const StockChart = () => {
+import type { StockLevelData } from "../types";
+
+interface StockChartProps {
+  period: "7d" | "30d" | "90d";
+  stockLevels: StockLevelData[];
+}
+
+export const StockChart = ({ stockLevels }: StockChartProps) => {
   const theme = useTheme();
 
-  const data = useMemo(
-    () => ({
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  const chartData = useMemo(() => {
+    // Format dates for labels
+    const labels = stockLevels.map((item) => {
+      const date = new Date(item.date);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    });
+
+    return {
+      labels,
       datasets: [
         {
           label: "Total Stock",
-          data: [1200, 1180, 1220, 1190, 1240, 1230, 1247],
+          data: stockLevels.map((item) => item.totalStock),
           borderColor: theme.palette.primary.main,
           backgroundColor: `${theme.palette.primary.main}1A`,
           borderWidth: 3,
@@ -72,9 +88,8 @@ export const StockChart = () => {
           pointBorderWidth: 2,
         },
       ],
-    }),
-    [theme]
-  );
+    };
+  }, [stockLevels, theme]);
 
   const options: ChartOptions<"line"> = useMemo(
     () => ({
@@ -130,7 +145,23 @@ export const StockChart = () => {
     [theme]
   );
 
-  return <Line data={data} options={options} />;
+  if (stockLevels.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "300px",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        No stock level data available
+      </div>
+    );
+  }
+
+  return <Line data={chartData} options={options} />;
 };
 
 // Export hook separately to avoid fast refresh warning

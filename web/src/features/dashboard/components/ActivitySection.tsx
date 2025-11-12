@@ -1,46 +1,70 @@
+import { Box, Typography } from "@mui/material";
 import { SectionCard, SectionHeader, ActivityItem } from "./ui";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import type { ActivityItem as ActivityItemType } from "../types";
 
-export const ActivitySection = () => {
-  const activities = [
-    {
-      type: "add" as const,
-      text: 'New product "Gaming Keyboard" added to Main Store',
-      time: "2 minutes ago",
-    },
-    {
-      type: "update" as const,
-      text: 'Product "Laptop Pro 15"" stock updated to 3 units',
-      time: "15 minutes ago",
-    },
-    {
-      type: "store" as const,
-      text: 'New store "Tech Hub" created',
-      time: "1 hour ago",
-    },
-    {
-      type: "update" as const,
-      text: 'Product "Wireless Mouse" price updated to $29.99',
-      time: "2 hours ago",
-    },
-    {
-      type: "add" as const,
-      text: 'New product "USB-C Cable" added to Tech Hub',
-      time: "3 hours ago",
-    },
-  ];
+interface ActivitySectionProps {
+  activity: ActivityItemType[];
+}
+
+const formatTimeAgo = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} second${diffInSeconds !== 1 ? "s" : ""} ago`;
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+};
+
+export const ActivitySection = ({ activity }: ActivitySectionProps) => {
+  if (activity.length === 0) {
+    return (
+      <SectionCard>
+        <SectionHeader title='Recent Activity' icon={<AccessTimeIcon />} />
+        <Typography
+          variant='body2'
+          color='text.secondary'
+          sx={{ p: 2, textAlign: "center" }}
+        >
+          No recent activity to display.
+        </Typography>
+      </SectionCard>
+    );
+  }
 
   return (
     <SectionCard>
       <SectionHeader title='Recent Activity' icon={<AccessTimeIcon />} />
-      {activities.map((activity, index) => (
-        <ActivityItem
-          key={index}
-          type={activity.type}
-          text={activity.text}
-          time={activity.time}
-        />
-      ))}
+      <Box
+        sx={{
+          maxHeight: "400px",
+          overflowY: "auto",
+          mt: 2,
+        }}
+      >
+        {activity.map((item, index) => (
+          <ActivityItem
+            key={index}
+            type={item.type}
+            text={item.text}
+            time={formatTimeAgo(item.timestamp)}
+          />
+        ))}
+      </Box>
     </SectionCard>
   );
 };

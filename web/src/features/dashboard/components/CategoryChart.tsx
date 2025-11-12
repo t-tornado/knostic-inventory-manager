@@ -3,39 +3,43 @@ import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import type { ChartOptions } from "chart.js";
 import { useTheme } from "@mui/material";
+import type { CategoryData } from "../types";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export const CategoryChart = () => {
+interface CategoryChartProps {
+  categories: CategoryData[];
+}
+
+const COLORS = [
+  "#ec4899",
+  "#8b5cf6",
+  "#06b6d4",
+  "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#ef4444",
+] as const;
+
+export const CategoryChart = ({ categories }: CategoryChartProps) => {
   const theme = useTheme();
 
-  const data = useMemo(
+  const chartData = useMemo(
     () => ({
-      labels: [
-        "Electronics",
-        "Accessories",
-        "Cables",
-        "Software",
-        "Hardware",
-        "Other",
-      ],
+      labels: categories.map((cat) => cat.category),
       datasets: [
         {
-          data: [420, 280, 195, 150, 120, 82],
-          backgroundColor: [
-            theme.palette.primary.main,
-            theme.palette.secondary.main,
-            "#ec4899",
-            theme.palette.warning.main,
-            theme.palette.success.main,
-            theme.palette.text.secondary,
-          ],
+          data: categories.map((cat) => cat.count),
+          backgroundColor: categories.map((_, index) => {
+            const colorIndex = index % COLORS.length;
+            return COLORS[colorIndex];
+          }),
           borderWidth: 0,
           hoverOffset: 8,
         },
       ],
     }),
-    [theme]
+    [categories]
   );
 
   const options: ChartOptions<"doughnut"> = useMemo(
@@ -87,5 +91,21 @@ export const CategoryChart = () => {
     [theme]
   );
 
-  return <Doughnut data={data} options={options} />;
+  if (categories.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "300px",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        No category data available
+      </div>
+    );
+  }
+
+  return <Doughnut data={chartData} options={options} />;
 };

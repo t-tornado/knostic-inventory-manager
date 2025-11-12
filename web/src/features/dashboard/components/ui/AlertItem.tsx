@@ -66,22 +66,21 @@ export const AlertItem = ({
           {description}
         </Typography>
       </Box>
-      {onAction && (
-        <Button
-          variant='contained'
-          size='small'
-          onClick={onAction}
-          sx={{
-            textTransform: "none",
-            fontWeight: 500,
-            fontSize: 13,
-            px: 2,
-            flexShrink: 0,
-          }}
-        >
-          {actionLabel}
-        </Button>
-      )}
+      <Button
+        variant='contained'
+        size='small'
+        onClick={onAction}
+        disabled
+        sx={{
+          textTransform: "none",
+          fontWeight: 500,
+          fontSize: 13,
+          px: 2,
+          flexShrink: 0,
+        }}
+      >
+        {actionLabel}
+      </Button>
     </Box>
   );
 };

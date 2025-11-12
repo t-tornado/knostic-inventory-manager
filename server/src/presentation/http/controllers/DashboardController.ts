@@ -2,12 +2,13 @@ import type { IHttpRequest, IHttpResponse } from "../IHttpServer";
 import type { DashboardService } from "../../../application/services/DashboardService";
 import { successResponse, errorResponse } from "../types";
 import { createInternalServerError } from "../../../domain/errors";
+import { apiPath } from "../../../shared/config/apiVersion";
 
 export class DashboardController {
   constructor(private dashboardService: DashboardService) {}
 
   async getStats(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/dashboard/stats";
+    const path = apiPath("/dashboard/stats");
     try {
       const stats = await this.dashboardService.getStats();
       const response = successResponse(stats, path, "GET");
@@ -29,7 +30,7 @@ export class DashboardController {
   }
 
   async getCategoryData(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/dashboard/categories";
+    const path = apiPath("/dashboard/categories");
     try {
       const data = await this.dashboardService.getCategoryData();
       const response = successResponse(data, path, "GET");
@@ -51,7 +52,7 @@ export class DashboardController {
   }
 
   async getStoreData(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/dashboard/stores";
+    const path = apiPath("/dashboard/stores");
     const view = req.query.view as "count" | "value" | undefined;
     try {
       const data = await this.dashboardService.getStoreData();
@@ -81,7 +82,7 @@ export class DashboardController {
     req: IHttpRequest,
     res: IHttpResponse
   ): Promise<void> {
-    const path = "/api/dashboard/stock-levels";
+    const path = apiPath("/dashboard/stock-levels");
     const period = (req.query.period as "7d" | "30d" | "90d") || "7d";
     try {
       const data = await this.dashboardService.getStockLevelData(period);
@@ -107,7 +108,7 @@ export class DashboardController {
     req: IHttpRequest,
     res: IHttpResponse
   ): Promise<void> {
-    const path = "/api/dashboard/inventory-value";
+    const path = apiPath("/dashboard/inventory-value");
     const period = (req.query.period as "7d" | "30d" | "90d") || "7d";
     try {
       const data = await this.dashboardService.getInventoryValueData(period);
@@ -133,7 +134,7 @@ export class DashboardController {
     req: IHttpRequest,
     res: IHttpResponse
   ): Promise<void> {
-    const path = "/api/dashboard/alerts";
+    const path = apiPath("/dashboard/alerts");
     const limit = req.query.limit
       ? parseInt(req.query.limit as string, 10)
       : 10;
@@ -161,7 +162,7 @@ export class DashboardController {
     req: IHttpRequest,
     res: IHttpResponse
   ): Promise<void> {
-    const path = "/api/dashboard/activity";
+    const path = apiPath("/dashboard/activity");
     const limit = req.query.limit
       ? parseInt(req.query.limit as string, 10)
       : 10;
@@ -189,7 +190,7 @@ export class DashboardController {
     req: IHttpRequest,
     res: IHttpResponse
   ): Promise<void> {
-    const path = "/api/dashboard";
+    const path = apiPath("/dashboard");
     try {
       // Parse query parameters for flexible data fetching
       const query = req.query;
