@@ -1,4 +1,4 @@
-import { PageLayout } from "@/app/layout";
+import { PageLayout } from "@/shared/components/PageLayout";
 import InventoryIcon from "@mui/icons-material/Inventory";
 
 export const StoreProductList = () => {

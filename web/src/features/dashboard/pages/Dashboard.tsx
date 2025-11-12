@@ -1,4 +1,4 @@
-import { PageLayout } from "@/app/layout";
+import { PageLayout } from "@/shared/components/PageLayout";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import {
   StatsGrid,
