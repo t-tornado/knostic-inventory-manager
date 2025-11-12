@@ -1,18 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { TableProvider } from "../context";
 import { useTableData, useTableState } from "../hooks";
 import { Box } from "@mui/material";
-import type { BusinessTableProps, Filter } from "../types";
+import type { BusinessTableProps, Filter, BusinessTableHandle } from "../types";
 import { TableControls, Table, TablePagination } from "./index";
 
 interface BusinessTableInnerProps {
   onFiltersChange?: (filters: Filter[]) => void;
+  tableRef?: React.Ref<BusinessTableHandle>;
 }
 
-function BusinessTableInner({ onFiltersChange }: BusinessTableInnerProps) {
-  const { data, meta, isLoading, error } = useTableData();
+function BusinessTableInner({
+  onFiltersChange,
+  tableRef,
+}: BusinessTableInnerProps) {
+  const { data, meta, isLoading, error, updateRowById, deleteRowById } =
+    useTableData();
   const { state } = useTableState();
   const previousFiltersRef = useRef<Filter[]>(state.filters);
+
+  useImperativeHandle(
+    tableRef,
+    () => ({
+      updateRow: updateRowById,
+      deleteRow: deleteRowById,
+    }),
+    [updateRowById, deleteRowById]
+  );
 
   // Subscribe to filter changes
   useEffect(() => {
@@ -76,12 +90,17 @@ function BusinessTableInner({ onFiltersChange }: BusinessTableInnerProps) {
   );
 }
 
-export function BusinessTable(props: BusinessTableProps) {
+export const BusinessTable = forwardRef<
+  BusinessTableHandle,
+  BusinessTableProps
+>((props, ref) => {
   const { onFiltersChange, getRowId, onRowClick, ...config } = props;
 
   return (
     <TableProvider config={config} getRowId={getRowId} onRowClick={onRowClick}>
-      <BusinessTableInner onFiltersChange={onFiltersChange} />
+      <BusinessTableInner onFiltersChange={onFiltersChange} tableRef={ref} />
     </TableProvider>
   );
-}
+});
+
+BusinessTable.displayName = "BusinessTable";

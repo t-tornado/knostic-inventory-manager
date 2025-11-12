@@ -287,3 +287,8 @@ export interface BusinessTableProps extends TableConfig {
    */
   getRowId?: (row: any) => string | number;
 }
+
+export interface BusinessTableHandle {
+  updateRow: (rowId: string | number, updatedRow: any) => void;
+  deleteRow: (rowId: string | number) => void;
+}

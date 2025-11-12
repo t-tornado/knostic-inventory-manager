@@ -18,4 +18,5 @@ export type {
   TableResponse,
   ProcessingMode,
   TableCustomization,
+  BusinessTableHandle,
 } from "./types";

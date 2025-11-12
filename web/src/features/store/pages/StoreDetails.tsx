@@ -1,7 +1,11 @@
 import { useParams } from "react-router-dom";
+import { useRef, useState } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
-import { BusinessTable } from "@/shared/components/BusinessTable";
+import {
+  BusinessTable,
+  type BusinessTableHandle,
+} from "@/shared/components/BusinessTable";
 import type {
   TableSchema,
   TableRequestParams,
@@ -28,13 +32,10 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningIcon from "@mui/icons-material/Warning";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import type { Product, ProductId } from "@/core/models/product/model";
+import type { ProductId } from "@/core/models/product/model";
 import type { ISODateTime, Price } from "@/core/models/ValueObjects";
-
-// Extended product type for display
-interface ProductWithStoreName extends Product {
-  storeName?: string;
-}
+import { EditProductModal } from "@/shared/components/EditProductModal";
+import type { ProductWithStoreName } from "@/features/product/types";
 
 // Define the table schema for store products (no storeName field needed)
 const storeProductsSchema: TableSchema = {
@@ -292,6 +293,10 @@ const getStoreProductsData = async (
 export const StoreDetails = () => {
   const { id } = useParams<{ id: string }>();
   const storeId = id || "1";
+  const tableRef = useRef<BusinessTableHandle | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductWithStoreName | null>(null);
+  const [isDetailOpen, setDetailOpen] = useState(false);
 
   // Mock store stats - in real app, calculate from products
   const totalProducts = 142;
@@ -310,13 +315,40 @@ export const StoreDetails = () => {
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
-    console.log("Row clicked:", row);
-    // TODO: Navigate to product details
+    setSelectedProduct(row);
+    setDetailOpen(true);
   };
 
   const handleFiltersChange = (filters: any[]) => {
     console.log("Filters changed:", filters);
   };
+
+  const handleCloseDetail = () => {
+    setDetailOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const handleSaveProduct = (updatedProduct: ProductWithStoreName) => {
+    const payload: ProductWithStoreName = {
+      ...updatedProduct,
+      updatedAt: new Date().toISOString() as ISODateTime,
+    };
+    tableRef.current?.updateRow(payload.id, payload);
+    handleCloseDetail();
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    tableRef.current?.deleteRow(productId);
+    handleCloseDetail();
+  };
+
+  const storeOptions = storeCatalog.map((store) => ({
+    id: store.id,
+    name: store.name,
+  }));
+
+  const categoryOptions = storeProductsSchema.products.category
+    .values as string[];
 
   // Create getData function that includes storeId
   const getData = async (
@@ -382,6 +414,7 @@ export const StoreDetails = () => {
       </StoreInfoCard>
 
       <BusinessTable
+        ref={tableRef}
         schema={storeProductsSchema}
         processingMode='server'
         getData={getData}
@@ -396,6 +429,15 @@ export const StoreDetails = () => {
           enableColumnResizing: true,
           enableColumnReordering: true,
         }}
+      />
+      <EditProductModal
+        open={isDetailOpen}
+        product={selectedProduct}
+        storeOptions={storeOptions}
+        categoryOptions={categoryOptions}
+        onClose={handleCloseDetail}
+        onSave={handleSaveProduct}
+        onDelete={handleDeleteProduct}
       />
     </PageLayout>
   );
