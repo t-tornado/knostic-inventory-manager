@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "npm run dev",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed": "ts-node scripts/init-db.ts"
   },
   "author": "Anthony Amponsah",
   "license": "MIT",
