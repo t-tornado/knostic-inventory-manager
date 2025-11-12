@@ -1,6 +1,10 @@
+import { useRef, useState } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import { BusinessTable } from "@/shared/components/BusinessTable";
+import {
+  BusinessTable,
+  type BusinessTableHandle,
+} from "@/shared/components/BusinessTable";
 import type {
   TableSchema,
   TableRequestParams,
@@ -9,13 +13,10 @@ import type {
   Column,
 } from "@/shared/components/BusinessTable";
 import { ProductTableHeaderActions } from "../components";
-import type { Product, ProductId } from "@/core/models/product/model";
+import { EditProductModal } from "@/shared/components/EditProductModal";
+import type { ProductId } from "@/core/models/product/model";
 import type { ISODateTime, Price } from "@/core/models/ValueObjects";
-
-// Extended product type for display (includes store name)
-interface ProductWithStoreName extends Product {
-  storeName?: string;
-}
+import type { ProductWithStoreName } from "../types";
 
 // Define the table schema for products
 const productsSchema: TableSchema = {
@@ -320,7 +321,32 @@ const getProductsData = async (
   };
 };
 
+const storeOptions = [
+  { id: "1", name: "Main Store" },
+  { id: "2", name: "Downtown Branch" },
+  { id: "3", name: "Tech Hub" },
+  { id: "4", name: "West Branch" },
+  { id: "5", name: "East Branch" },
+  { id: "6", name: "North Plaza" },
+  { id: "7", name: "South Center" },
+  { id: "8", name: "Central Mall" },
+];
+
+const categoryOptions = [
+  "Electronics",
+  "Accessories",
+  "Cables",
+  "Hardware",
+  "Software",
+  "Other",
+];
+
 export const ProductList = () => {
+  const tableRef = useRef<BusinessTableHandle | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductWithStoreName | null>(null);
+  const [isDetailOpen, setDetailOpen] = useState(false);
+
   const handleExport = () => {
     console.log("Export products");
     // TODO: Implement export functionality
@@ -332,13 +358,33 @@ export const ProductList = () => {
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
-    console.log("Row clicked:", row);
-    // TODO: Navigate to product details
+    setSelectedProduct(row);
+    setDetailOpen(true);
   };
 
   const handleFiltersChange = (filters: any[]) => {
     // Update URL or perform other side effects
     console.log("Filters changed:", filters);
+  };
+
+  const handleCloseDetail = () => {
+    setDetailOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const handleSaveProduct = (updatedProduct: ProductWithStoreName) => {
+    if (!updatedProduct) return;
+    const payload: ProductWithStoreName = {
+      ...updatedProduct,
+      updatedAt: new Date().toISOString() as ISODateTime,
+    };
+    tableRef.current?.updateRow(payload.id, payload);
+    handleCloseDetail();
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    tableRef.current?.deleteRow(productId);
+    handleCloseDetail();
   };
 
   return (
@@ -353,6 +399,7 @@ export const ProductList = () => {
       }
     >
       <BusinessTable
+        ref={tableRef}
         schema={productsSchema}
         processingMode='server'
         getData={getProductsData}
@@ -367,6 +414,15 @@ export const ProductList = () => {
           enableColumnResizing: true,
           enableColumnReordering: true,
         }}
+      />
+      <EditProductModal
+        open={isDetailOpen}
+        product={selectedProduct}
+        storeOptions={storeOptions}
+        categoryOptions={categoryOptions}
+        onClose={handleCloseDetail}
+        onSave={handleSaveProduct}
+        onDelete={handleDeleteProduct}
       />
     </PageLayout>
   );
