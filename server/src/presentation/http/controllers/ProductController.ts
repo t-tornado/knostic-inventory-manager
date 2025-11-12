@@ -113,9 +113,51 @@ export class ProductController {
     }
 
     try {
-      const products = await this.productService.getProductsByStoreId(storeId);
-      const response = successResponse(products, path, "GET");
-      res.status(200).json(response);
+      // Parse query parameters
+      const queryParams: {
+        search?: string;
+        filters?: string;
+        sort?: string;
+        page?: number;
+        pageSize?: number;
+      } = {};
+
+      if (req.query.search) {
+        queryParams.search = req.query.search as string;
+      }
+      if (req.query.filters) {
+        queryParams.filters = req.query.filters as string;
+      }
+      if (req.query.sort) {
+        queryParams.sort = req.query.sort as string;
+      }
+      if (req.query.page) {
+        queryParams.page = parseInt(req.query.page as string, 10);
+      }
+      if (req.query.pageSize) {
+        queryParams.pageSize = parseInt(req.query.pageSize as string, 10);
+      }
+
+      // If no query params, use simple method for backward compatibility
+      if (
+        !queryParams.search &&
+        !queryParams.filters &&
+        !queryParams.sort &&
+        !queryParams.page &&
+        !queryParams.pageSize
+      ) {
+        const products =
+          await this.productService.getProductsByStoreId(storeId);
+        const response = successResponse(products, path, "GET");
+        res.status(200).json(response);
+      } else {
+        const result = await this.productService.getProductsByStoreIdWithParams(
+          storeId,
+          queryParams
+        );
+        const response = successResponse(result, path, "GET");
+        res.status(200).json(response);
+      }
     } catch (error) {
       const response = errorResponse(
         [

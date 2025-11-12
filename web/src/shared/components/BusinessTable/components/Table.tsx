@@ -116,6 +116,16 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
         height: "100%",
         maxHeight: "100%",
         position: "relative",
+        overflow: "auto",
+        "& .MuiTable-root": {
+          position: "relative",
+        },
+        "& .MuiTableHead-root": {
+          "& ~ *": {
+            position: "relative",
+            zIndex: 1,
+          },
+        },
       },
     },
     muiTablePaperProps: {
@@ -127,15 +137,26 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
         flexDirection: "column",
         boxShadow: "none",
         position: "relative",
+        overflow: "hidden",
         "& .MuiBox-root": {
           backgroundColor: "background.default",
         },
         "& .MuiBackdrop-root": {
-          top: "56px",
-          height: "calc(100% - 56px)",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 5,
+          pointerEvents: "none",
         },
         "& .MuiCircularProgress-root": {
-          position: "relative",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 6,
+          pointerEvents: "auto",
         },
       },
     },
@@ -145,19 +166,21 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
       sx: {
         "& .MuiTableBody-root": {
           bgcolor: "background.paper",
+          position: "relative",
         },
         "& .MuiTableCell-body": {
           bgcolor: "background.paper",
         },
         "& .MuiTableCell-head": {
           bgcolor: "background.default",
-          // Ensure header stays above loading overlay
-          position: "relative",
+          position: "sticky",
+          top: 0,
           zIndex: 10,
         },
         "& .MuiTableHead-root": {
-          position: "relative",
-          zIndex: 10,
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
         },
       },
     },
@@ -165,9 +188,9 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
       sx: {
         fontWeight: "bold",
         bgcolor: "action.hover",
-        // Ensure header cells stay above loading overlay
-        position: "relative",
-        zIndex: 10,
+        position: "sticky",
+        top: 0,
+        zIndex: 20,
       },
     },
     muiTableBodyRowProps: ({ row }) => ({
@@ -182,9 +205,7 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
         "&:hover": onRowClick
           ? {
               backgroundColor: (theme) =>
-                theme.palette.mode === "dark"
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.04)",
+                theme.palette.mode === theme.palette.background.default,
             }
           : {},
       },

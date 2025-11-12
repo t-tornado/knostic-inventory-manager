@@ -9,13 +9,13 @@ export const StoreInfoCard = ({ children }: StoreInfoCardProps) => {
     <Card
       sx={{
         borderRadius: 3,
-        mb: 3,
         boxShadow: 1,
         border: 1,
         borderColor: "divider",
+        flexShrink: 0,
       }}
     >
-      <CardContent sx={{ p: 4 }}>{children}</CardContent>
+      <CardContent sx={{ p: 2 }}>{children}</CardContent>
     </Card>
   );
 };

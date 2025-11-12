@@ -10,7 +10,7 @@ export const StoreInfoMain = ({ children }: StoreInfoMainProps) => {
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 2.5,
+        gap: 1.5,
       }}
     >
       {children}

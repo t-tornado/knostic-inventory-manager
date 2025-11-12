@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { storeService } from "../service";
 import type { StoreQueryParams, StoreQueryResult } from "../types";
+import { queryKeys } from "@/shared/config/queryKeys";
 
 export interface UseStoresOptions extends StoreQueryParams {
   enabled?: boolean;
@@ -27,7 +28,7 @@ export function useStores(options: UseStoresOptions = {}) {
   };
 
   return useQuery<StoreQueryResult, Error>({
-    queryKey: ["stores", queryParams],
+    queryKey: queryKeys.stores.list(queryParams),
     queryFn: () => storeService.getStores(queryParams),
     enabled,
     refetchInterval,

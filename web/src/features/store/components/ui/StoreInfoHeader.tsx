@@ -11,7 +11,7 @@ export const StoreInfoHeader = ({ children }: StoreInfoHeaderProps) => {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        mb: 3,
+        mb: 2,
       }}
     >
       {children}

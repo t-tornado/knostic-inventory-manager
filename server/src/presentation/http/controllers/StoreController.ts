@@ -114,6 +114,62 @@ export class StoreController {
     }
   }
 
+  async getStoreDetails(req: IHttpRequest, res: IHttpResponse): Promise<void> {
+    const { id } = req.params;
+    const path = apiPath(`/stores/${id}/details`);
+
+    if (!id) {
+      const response = errorResponse(
+        [
+          createValidationError(
+            "id",
+            "MISSING_REQUIRED",
+            "Store ID is required"
+          ),
+        ],
+        path,
+        "GET"
+      );
+      res.status(400).json(response);
+      return;
+    }
+
+    try {
+      const storeDetails = await this.storeService.getStoreDetails(id);
+      if (!storeDetails) {
+        const response = errorResponse(
+          [
+            createNotFoundError(
+              "id",
+              "STORE_NOT_FOUND",
+              `Store with id '${id}' not found`
+            ),
+          ],
+          path,
+          "GET"
+        );
+        res.status(404).json(response);
+        return;
+      }
+
+      const response = successResponse(storeDetails, path, "GET");
+      res.status(200).json(response);
+    } catch (error) {
+      const response = errorResponse(
+        [
+          createInternalServerError(
+            "store",
+            "FETCH_ERROR",
+            "Failed to fetch store details"
+          ),
+        ],
+        path,
+        "GET"
+      );
+      res.status(500).json(response);
+    }
+  }
+
   async createStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const path = apiPath("/stores");
     const { name } = req.body as { name?: string };

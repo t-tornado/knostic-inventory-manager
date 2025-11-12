@@ -11,10 +11,23 @@ const fieldToColumnMap: Record<string, string> = {
   name: "name",
   createdAt: "created_at",
   updatedAt: "updated_at",
+  stockQuantity: "stock_quantity",
+  stock_quantity: "stock_quantity",
+  price: "price",
+  category: "category",
+  storeId: "store_id",
+  store_id: "store_id",
   "stores.id": "id",
   "stores.name": "name",
   "stores.createdAt": "created_at",
   "stores.updatedAt": "updated_at",
+  "products.id": "id",
+  "products.name": "name",
+  "products.category": "category",
+  "products.stockQuantity": "stock_quantity",
+  "products.price": "price",
+  "products.createdAt": "created_at",
+  "products.updatedAt": "updated_at",
 };
 
 /**

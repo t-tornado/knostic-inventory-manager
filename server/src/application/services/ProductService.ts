@@ -1,4 +1,8 @@
-import type { IProductRepository } from "../../domain/repositories/IProductRepository";
+import type {
+  IProductRepository,
+  ProductQueryParams,
+  ProductQueryResult,
+} from "../../domain/repositories/IProductRepository";
 import type { Product, ProductId } from "../../domain/entities/Product";
 import type { StoreId } from "../../domain/entities/Store";
 import type { Price } from "../../domain/entities/ValueObject";
@@ -20,6 +24,14 @@ export class ProductService {
   async getProductsByStoreId(storeId: string): Promise<Product[]> {
     const id = createStoreId(storeId);
     return this.productRepository.findByStoreId(id);
+  }
+
+  async getProductsByStoreIdWithParams(
+    storeId: string,
+    params?: ProductQueryParams
+  ): Promise<ProductQueryResult> {
+    const id = createStoreId(storeId);
+    return this.productRepository.findByStoreIdWithParams(id, params);
   }
 
   async createProduct(data: {

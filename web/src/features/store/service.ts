@@ -4,6 +4,7 @@ import type {
   IStoreService,
   IStoreRepository,
   StoreQueryParams,
+  ProductQueryParams,
 } from "./types";
 
 export function createStoreService(
@@ -12,6 +13,12 @@ export function createStoreService(
   return {
     async getStores(params?: StoreQueryParams) {
       return repository.getStores(params);
+    },
+    async getStoreDetails(id: string) {
+      return repository.getStoreDetails(id);
+    },
+    async getStoreProducts(storeId: string, params?: ProductQueryParams) {
+      return repository.getStoreProducts(storeId, params);
     },
   };
 }

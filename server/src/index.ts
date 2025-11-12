@@ -66,7 +66,11 @@ async function bootstrap(): Promise<void> {
   }
 
   // Initialize services
-  const storeService = new StoreService(storeRepository, productRepository);
+  const storeService = new StoreService(
+    storeRepository,
+    productRepository,
+    database
+  );
   const productService = new ProductService(productRepository);
   const dashboardService = new DashboardService(database);
 

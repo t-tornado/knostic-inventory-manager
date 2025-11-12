@@ -46,6 +46,9 @@ export function setupRoutes(
   server.get(apiPath("/stores/:id"), (req, res) =>
     storeController.getStoreById(req, res)
   );
+  server.get(apiPath("/stores/:id/details"), (req, res) =>
+    storeController.getStoreDetails(req, res)
+  );
   server.post(apiPath("/stores"), (req, res) =>
     storeController.createStore(req, res)
   );

@@ -41,19 +41,19 @@ export const StoreStat = ({
       sx={{
         display: "flex",
         flexDirection: "column",
-        gap: 1,
+        gap: 0.5,
       }}
     >
       <Box
         sx={{
-          width: 40,
-          height: 40,
-          borderRadius: 2,
+          width: 32,
+          height: 32,
+          borderRadius: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 18,
-          mb: 1,
+          fontSize: 16,
+          mb: 0.5,
           ...iconColorMap[iconColor],
         }}
       >
@@ -63,19 +63,21 @@ export const StoreStat = ({
         variant='overline'
         sx={{
           color: "text.secondary",
-          fontSize: 13,
+          fontSize: 11,
           fontWeight: 500,
           textTransform: "uppercase",
           letterSpacing: 0.5,
+          lineHeight: 1.2,
         }}
       >
         {label}
       </Typography>
       <Typography
-        variant='h5'
+        variant='h6'
         sx={{
           fontWeight: 700,
           color: "text.primary",
+          fontSize: "1rem",
         }}
       >
         {value}
