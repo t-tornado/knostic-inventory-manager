@@ -8,7 +8,13 @@
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "outDir": "dist"
   },
-  "include": ["src"]
+  "include": ["src", "scripts"],
+  "ts-node": {
+    "files": true
+  }
 }
