@@ -12,12 +12,17 @@ import { buildQuery } from "./queryBuilder";
 interface ProductRow {
   id: string;
   store_id: string;
+  store_name?: string;
   name: string;
   category: string;
   stock_quantity: number;
   price: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductWithStoreName extends Product {
+  storeName?: string | undefined;
 }
 
 export class ProductRepository implements IProductRepository {
@@ -36,6 +41,13 @@ export class ProductRepository implements IProductRepository {
     };
   }
 
+  private rowToEntityWithStoreName(row: ProductRow): ProductWithStoreName {
+    return {
+      ...this.rowToEntity(row),
+      storeName: row.store_name ?? undefined,
+    };
+  }
+
   async findAll(): Promise<Product[]> {
     const rows = await this.db.query<ProductRow>(
       "SELECT * FROM products ORDER BY created_at DESC"
@@ -50,7 +62,11 @@ export class ProductRepository implements IProductRepository {
     const pageSize = params?.pageSize || 25;
     const offset = (page - 1) * pageSize;
 
-    const { whereClause, orderBy, queryParams } = buildQuery({
+    const {
+      whereClause: baseWhereClause,
+      orderBy: baseOrderBy,
+      queryParams,
+    } = buildQuery({
       searchFields: params?.search ? ["name", "category", "id"] : [],
       searchTerm: params?.search,
       filters: params?.filters,
@@ -68,14 +84,22 @@ export class ProductRepository implements IProductRepository {
       },
     });
 
-    const countQuery = `SELECT COUNT(*) as total FROM products ${whereClause}`;
+    const countQuery = `SELECT COUNT(*) as total FROM products ${baseWhereClause}`;
     const countResult = await this.db.query<{ total: number }>(
       countQuery,
       queryParams
     );
     const total = countResult[0]?.total || 0;
 
-    const dataQuery = `SELECT * FROM products ${whereClause} ${orderBy} LIMIT ? OFFSET ?`;
+    const whereClauseForJoin = baseWhereClause.replace(
+      /\b(name|category|stock_quantity|price|created_at|updated_at|id)\b/g,
+      "p.$1"
+    );
+    const orderByForJoin = baseOrderBy.replace(
+      /\b(name|category|stock_quantity|price|created_at|updated_at|id)\b/g,
+      "p.$1"
+    );
+    const dataQuery = `SELECT p.*, s.name as store_name FROM products p LEFT JOIN stores s ON p.store_id = s.id ${whereClauseForJoin} ${orderByForJoin} LIMIT ? OFFSET ?`;
     const rows = await this.db.query<ProductRow>(dataQuery, [
       ...queryParams,
       pageSize,
@@ -83,7 +107,7 @@ export class ProductRepository implements IProductRepository {
     ]);
 
     return {
-      data: rows.map((row) => this.rowToEntity(row)),
+      data: rows.map((row) => this.rowToEntityWithStoreName(row)) as Product[],
       total,
       page,
       pageSize,
@@ -154,7 +178,15 @@ export class ProductRepository implements IProductRepository {
     );
     const total = countResult[0]?.total || 0;
 
-    const dataQuery = `SELECT * FROM products ${whereClause} ${orderBy} LIMIT ? OFFSET ?`;
+    const whereClauseForJoin = whereClause.replace(
+      /\b(name|category|stock_quantity|price|created_at|updated_at|id|store_id)\b/g,
+      "p.$1"
+    );
+    const orderByForJoin = orderBy.replace(
+      /\b(name|category|stock_quantity|price|created_at|updated_at|id)\b/g,
+      "p.$1"
+    );
+    const dataQuery = `SELECT p.*, s.name as store_name FROM products p LEFT JOIN stores s ON p.store_id = s.id ${whereClauseForJoin} ${orderByForJoin} LIMIT ? OFFSET ?`;
     const rows = await this.db.query<ProductRow>(dataQuery, [
       ...allParams,
       pageSize,
@@ -162,7 +194,7 @@ export class ProductRepository implements IProductRepository {
     ]);
 
     return {
-      data: rows.map((row) => this.rowToEntity(row)),
+      data: rows.map((row) => this.rowToEntityWithStoreName(row)) as Product[],
       total,
       page,
       pageSize,

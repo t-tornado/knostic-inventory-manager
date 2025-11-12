@@ -13,7 +13,7 @@ export interface ProductQueryParams {
 }
 
 export interface ProductQueryResult {
-  data: Product[];
+  data: ProductWithStoreName[];
   total: number;
   page: number;
   pageSize: number;
