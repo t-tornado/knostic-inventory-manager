@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
 import { BusinessTable } from "@/shared/components/BusinessTable";
@@ -180,6 +181,8 @@ const getStoresData = async (
 };
 
 export const StoreList = () => {
+  const navigate = useNavigate();
+
   const handleExport = () => {
     console.log("Export stores");
     // TODO: Implement export functionality
@@ -191,8 +194,7 @@ export const StoreList = () => {
   };
 
   const handleRowClick = (row: Store) => {
-    console.log("Row clicked:", row);
-    // TODO: Navigate to store details
+    navigate(`/stores/${row.id}`);
   };
 
   const handleFiltersChange = (filters: any[]) => {

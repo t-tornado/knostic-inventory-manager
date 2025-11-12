@@ -16,11 +16,14 @@ export function TableControls() {
         borderColor: "divider",
         flexWrap: "wrap",
         alignItems: "center",
+        justifyContent: "start",
       }}
     >
       {features.enableSearching && <SearchInput />}
-      {features.enableFiltering && <FilterPanel />}
-      {features.enableDynamicColumns && <ColumnPanel />}
+      <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
+        {features.enableDynamicColumns && <ColumnPanel />}
+        {features.enableFiltering && <FilterPanel />}
+      </Box>
     </Box>
   );
 }

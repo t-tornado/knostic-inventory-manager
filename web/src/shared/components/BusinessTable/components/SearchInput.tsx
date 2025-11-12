@@ -23,7 +23,7 @@ export function SearchInput() {
   return (
     <TextField
       size='small'
-      placeholder='Search...'
+      placeholder='Search products...'
       value={localValue}
       onChange={handleChange}
       InputProps={{
@@ -33,7 +33,14 @@ export function SearchInput() {
           </InputAdornment>
         ),
       }}
-      sx={{ minWidth: 250 }}
+      sx={{
+        minWidth: 250,
+        maxWidth: 350,
+        width: "100%",
+        "& .MuiOutlinedInput-root": {
+          borderRadius: 2,
+        },
+      }}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@mui/material";
+import { IconButton, Badge } from "@mui/material";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import { ColumnPopover } from "./ColumnPopover";
 import { useColumns } from "../hooks/useColumns";
@@ -17,23 +17,41 @@ export function ColumnPanel() {
   };
 
   const visibleCount = columns.filter((col) => isColumnVisible(col.id)).length;
-  const hasHiddenColumns = visibleCount < columns.length;
+  const totalCount = columns.length;
+  const hasHiddenColumns = visibleCount < totalCount;
 
   return (
     <>
-      <Button
+      <IconButton
         size='small'
-        startIcon={<ViewColumnIcon />}
-        variant='outlined'
         onClick={handleOpen}
+        sx={{
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 2,
+          "&:hover": {
+            bgcolor: "action.hover",
+          },
+        }}
       >
-        Columns
-        {hasHiddenColumns && (
-          <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
-            ({visibleCount}/{columns.length})
-          </span>
-        )}
-      </Button>
+        <Badge
+          badgeContent={
+            hasHiddenColumns ? `${visibleCount}/${totalCount}` : "all"
+          }
+          color='secondary'
+          sx={{
+            "& .MuiBadge-badge": {
+              backgroundColor: "primary.main",
+              top: -8,
+              right: -4,
+              fontSize: 8,
+              height: 16,
+            },
+          }}
+        >
+          <ViewColumnIcon fontSize='small' />
+        </Badge>
+      </IconButton>
       <ColumnPopover anchorEl={anchorEl} onClose={handleClose} />
     </>
   );

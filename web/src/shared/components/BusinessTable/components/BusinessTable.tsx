@@ -54,9 +54,21 @@ function BusinessTableInner({ onFiltersChange }: BusinessTableInnerProps) {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 400,
+        bgcolor: "background.paper",
+        borderRadius: 3,
+        border: 1,
+        borderColor: "divider",
+        boxShadow: 1,
+        overflow: "hidden",
+      }}
+    >
       <TableControls />
-      <Box sx={{ flex: 1, overflow: "auto" }}>
+      <Box sx={{ flex: 1, overflow: "auto", minHeight: 0, p: 2 }}>
         <Table data={data} isLoading={isLoading} />
       </Box>
       <TablePagination meta={meta} />
@@ -65,10 +77,10 @@ function BusinessTableInner({ onFiltersChange }: BusinessTableInnerProps) {
 }
 
 export function BusinessTable(props: BusinessTableProps) {
-  const { onFiltersChange, getRowId, ...config } = props;
+  const { onFiltersChange, getRowId, onRowClick, ...config } = props;
 
   return (
-    <TableProvider config={config} getRowId={getRowId}>
+    <TableProvider config={config} getRowId={getRowId} onRowClick={onRowClick}>
       <BusinessTableInner onFiltersChange={onFiltersChange} />
     </TableProvider>
   );

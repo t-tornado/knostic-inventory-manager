@@ -50,7 +50,7 @@ export const StockChartFilters = ({
   );
 };
 
-export const StockChart = ({ period }: { period: "7d" | "30d" | "90d" }) => {
+export const StockChart = () => {
   const theme = useTheme();
 
   const data = useMemo(
@@ -73,7 +73,7 @@ export const StockChart = ({ period }: { period: "7d" | "30d" | "90d" }) => {
         },
       ],
     }),
-    [theme, period]
+    [theme]
   );
 
   const options: ChartOptions<"line"> = useMemo(

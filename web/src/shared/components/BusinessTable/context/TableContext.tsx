@@ -12,6 +12,7 @@ export interface TableContextValue {
   schema: ParsedSchema;
   config: Required<TableConfig>;
   getRowId?: (row: any) => string | number;
+  onRowClick?: (row: any) => void;
 }
 
 export const TableContext = createContext<TableContextValue | null>(null);
