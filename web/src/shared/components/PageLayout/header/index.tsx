@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { HeaderTitle } from "./HeaderTitle";
 import { HeaderActions } from "./HeaderActions";
-import { HeaderDefaultActions } from "./HeaderDefaultActions";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   title: string;
@@ -34,7 +34,10 @@ export const Header = ({ title, icon, actions }: HeaderProps) => {
       }}
     >
       <HeaderTitle title={title} icon={icon} />
-      <HeaderActions>{actions || <HeaderDefaultActions />}</HeaderActions>
+      <HeaderActions>
+        <ThemeToggle />
+        {actions}
+      </HeaderActions>
     </Box>
   );
 };
