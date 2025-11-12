@@ -1,5 +1,6 @@
 import { useRef, useState, useMemo } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
+import { PageError } from "@/shared/components/PageError";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import {
   BusinessTable,
@@ -18,6 +19,7 @@ import { productService } from "../service";
 import { useUpdateProduct, useDeleteProduct } from "../hooks";
 import { useStores } from "@/features/store/hooks";
 import type { ProductWithStoreName } from "../types";
+import { PRODUCT_CATEGORIES } from "../constants";
 
 // Define the table schema for products
 const productsSchema: TableSchema = {
@@ -36,14 +38,7 @@ const productsSchema: TableSchema = {
     },
     category: {
       value_types: ["string", "enum"],
-      values: [
-        "Electronics",
-        "Accessories",
-        "Cables",
-        "Hardware",
-        "Software",
-        "Other",
-      ],
+      values: [...PRODUCT_CATEGORIES],
     },
     stockQuantity: {
       value_types: ["number"],
@@ -104,14 +99,7 @@ const tableCustomization: TableCustomization = {
   },
 };
 
-const categoryOptions = [
-  "Electronics",
-  "Accessories",
-  "Cables",
-  "Hardware",
-  "Software",
-  "Other",
-];
+const categoryOptions = [...PRODUCT_CATEGORIES];
 
 export const ProductList = () => {
   const tableRef = useRef<BusinessTableHandle | null>(null);
@@ -143,21 +131,8 @@ export const ProductList = () => {
           pageSize: params.pageSize,
         });
 
-        // Map products to include storeName
-        const productsWithStoreName: ProductWithStoreName[] = result.data.map(
-          (product) => {
-            const store = storesData?.data.find(
-              (s) => s.id === product.storeId
-            );
-            return {
-              ...product,
-              storeName: store?.name,
-            };
-          }
-        );
-
         return {
-          data: productsWithStoreName,
+          data: result.data,
           meta: {
             total: result.total,
             page: result.page,
@@ -165,7 +140,7 @@ export const ProductList = () => {
           },
         };
       },
-    [storesData]
+    []
   );
 
   const handleExport = () => {
@@ -175,7 +150,7 @@ export const ProductList = () => {
 
   const handleNewProduct = () => {
     console.log("New product");
-    // TODO: Navigate to new product page or open modal
+    // TODO: Create a separate CreateProductModal component
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
@@ -193,9 +168,8 @@ export const ProductList = () => {
   };
 
   const handleSaveProduct = async (updatedProduct: ProductWithStoreName) => {
-    if (!updatedProduct) return;
     try {
-      await updateProductMutation.mutateAsync({
+      const result = await updateProductMutation.mutateAsync({
         id: updatedProduct.id,
         data: {
           storeId: updatedProduct.storeId,
@@ -205,10 +179,14 @@ export const ProductList = () => {
           price: updatedProduct.price,
         },
       });
-      tableRef.current?.updateRow(updatedProduct.id, updatedProduct);
+      const productWithStoreName: ProductWithStoreName = {
+        ...result,
+        storeName: storesData?.data.find((s) => s.id === result.storeId)?.name,
+      };
+      tableRef.current?.updateRow(result.id, productWithStoreName);
       handleCloseDetail();
     } catch (error) {
-      console.error("Failed to update product:", error);
+      console.error("Failed to save product:", error);
     }
   };
 
@@ -242,6 +220,17 @@ export const ProductList = () => {
         onRowClick={handleRowClick}
         onFiltersChange={handleFiltersChange}
         customization={tableCustomization}
+        slots={{
+          ErrorState: ({ error, refetch }) => (
+            <PageError
+              title='Failed to load products'
+              message={
+                error.message || "Unable to fetch products. Please try again."
+              }
+              onRetry={() => refetch()}
+            />
+          ),
+        }}
         features={{
           enableFiltering: true,
           enableSearching: true,
@@ -250,15 +239,17 @@ export const ProductList = () => {
           enableColumnReordering: true,
         }}
       />
-      <EditProductModal
-        open={isDetailOpen}
-        product={selectedProduct}
-        storeOptions={storeOptions}
-        categoryOptions={categoryOptions}
-        onClose={handleCloseDetail}
-        onSave={handleSaveProduct}
-        onDelete={handleDeleteProduct}
-      />
+      {selectedProduct && (
+        <EditProductModal
+          open={isDetailOpen}
+          product={selectedProduct}
+          storeOptions={storeOptions}
+          categoryOptions={categoryOptions}
+          onClose={handleCloseDetail}
+          onSave={handleSaveProduct}
+          onDelete={handleDeleteProduct}
+        />
+      )}
     </PageLayout>
   );
 };

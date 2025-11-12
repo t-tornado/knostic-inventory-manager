@@ -42,6 +42,7 @@ import { storeService } from "../service";
 import { PageError } from "@/shared/components/PageError";
 import { PageLoader } from "@/shared/components/PageLoader";
 import type { Store } from "@/core/models/store/model";
+import { PRODUCT_CATEGORIES } from "@/features/product/constants";
 
 const storeProductsSchema: TableSchema = {
   products: {
@@ -55,14 +56,7 @@ const storeProductsSchema: TableSchema = {
     },
     category: {
       value_types: ["string", "enum"],
-      values: [
-        "Electronics",
-        "Accessories",
-        "Cables",
-        "Hardware",
-        "Software",
-        "Other",
-      ],
+      values: [...PRODUCT_CATEGORIES],
     },
     stockQuantity: {
       value_types: ["number"],
@@ -109,7 +103,6 @@ const tableCustomization: TableCustomization = {
       return "-";
     }
 
-    // Format dates
     if (column.field === "createdAt" || column.field === "updatedAt") {
       if (value) {
         return new Date(value as string).toLocaleDateString();
@@ -138,7 +131,6 @@ export const StoreDetails = () => {
     useState<ProductWithStoreName | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
-  // Get store info and stats from API
   const storeInfo = storeDetails?.store;
   const stats = storeDetails?.stats;
 
@@ -154,7 +146,6 @@ export const StoreDetails = () => {
 
   const handleAddProduct = () => {
     console.log("Add product");
-    // TODO: Navigate to add product page or open modal
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
@@ -228,8 +219,6 @@ export const StoreDetails = () => {
     }
   };
 
-  // Get store options for product modal - we'll need to fetch all stores
-  // For now, use the current store
   const storeOptions = storeInfo
     ? [
         {
@@ -239,10 +228,8 @@ export const StoreDetails = () => {
       ]
     : [];
 
-  const categoryOptions = storeProductsSchema.products.category
-    .values as string[];
+  const categoryOptions = [...PRODUCT_CATEGORIES];
 
-  // Create getData function that calls the API
   const getData = useMemo(
     () =>
       async (params: TableRequestParams): Promise<TableResponse> => {
@@ -254,7 +241,6 @@ export const StoreDetails = () => {
           pageSize: params.pageSize,
         });
 
-        // Map products to include storeName for compatibility
         const productsWithStoreName: ProductWithStoreName[] = result.data.map(
           (product) => ({
             ...product,
@@ -274,7 +260,6 @@ export const StoreDetails = () => {
     [storeId, storeInfo?.name]
   );
 
-  // Show loading state
   if (isLoadingDetails) {
     return (
       <PageLayout
@@ -289,7 +274,6 @@ export const StoreDetails = () => {
     );
   }
 
-  // Show error state
   if (storeDetailsError || !storeInfo) {
     return (
       <PageLayout
@@ -406,15 +390,17 @@ export const StoreDetails = () => {
           />
         </Box>
       </Box>
-      <EditProductModal
-        open={isDetailOpen}
-        product={selectedProduct}
-        storeOptions={storeOptions}
-        categoryOptions={categoryOptions}
-        onClose={handleCloseDetail}
-        onSave={handleSaveProduct}
-        onDelete={handleDeleteProduct}
-      />
+      {selectedProduct && (
+        <EditProductModal
+          open={isDetailOpen}
+          product={selectedProduct}
+          storeOptions={storeOptions}
+          categoryOptions={categoryOptions}
+          onClose={handleCloseDetail}
+          onSave={handleSaveProduct}
+          onDelete={handleDeleteProduct}
+        />
+      )}
       <EditStoreModal
         open={isStoreModalOpen}
         store={storeInfo}
