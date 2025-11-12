@@ -2,7 +2,8 @@ import { useTableContext } from "../context/TableContext";
 import { selectors } from "../state/selectors";
 
 export function useTableState() {
-  const { state, dispatch, schema, config, getRowId } = useTableContext();
+  const { state, dispatch, schema, config, getRowId, onRowClick } =
+    useTableContext();
 
   return {
     state,
@@ -10,6 +11,7 @@ export function useTableState() {
     schema,
     config,
     getRowId,
+    onRowClick,
     visibleColumns: selectors.visibleColumns(state),
     activeFilters: selectors.activeFilters(state),
     hasActiveFilters: selectors.hasActiveFilters(state),

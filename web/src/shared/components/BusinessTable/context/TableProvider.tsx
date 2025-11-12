@@ -11,12 +11,14 @@ interface TableProviderProps {
   children: React.ReactNode;
   config: TableConfig;
   getRowId?: (row: any) => string | number;
+  onRowClick?: (row: any) => void;
 }
 
 export function TableProvider({
   children,
   config,
   getRowId,
+  onRowClick,
 }: TableProviderProps) {
   // Validate configuration
   const validation = validateConfig(config);
@@ -98,8 +100,9 @@ export function TableProvider({
       schema: parsedSchema,
       config: mergedConfig,
       getRowId,
+      onRowClick,
     }),
-    [state, dispatch, parsedSchema, mergedConfig, getRowId]
+    [state, dispatch, parsedSchema, mergedConfig, getRowId, onRowClick]
   );
 
   return (

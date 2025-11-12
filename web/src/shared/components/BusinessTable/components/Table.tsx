@@ -26,7 +26,7 @@ interface TableProps {
 
 export function Table({ data, isLoading }: TableProps) {
   const { visibleColumns, columnSorting } = useColumns();
-  const { state, dispatch, config, getRowId } = useTableState();
+  const { state, dispatch, config, getRowId, onRowClick } = useTableState();
 
   // Transform columns to MRT format
   const mrtColumns = useMemo<MRT_ColumnDef<any>[]>(() => {
@@ -97,7 +97,7 @@ export function Table({ data, isLoading }: TableProps) {
           }
         }
       : undefined,
-    enableColumnOrdering: config.features.enableColumnReordering !== false,
+    enableColumnOrdering: false, // Disable column actions
     enableSorting: config.features.enableColumnSorting !== false,
     enableColumnFilters: false, // We use custom filtering
     enableGlobalFilter: false, // We use custom search
@@ -108,6 +108,7 @@ export function Table({ data, isLoading }: TableProps) {
     enableTopToolbar: false,
     enableColumnDragging: false,
     enableColumnResizing: false,
+    enableColumnActions: false, // Disable column actions menu
     state: {
       sorting: mrtSorting,
       pagination: mrtPagination,
@@ -119,21 +120,56 @@ export function Table({ data, isLoading }: TableProps) {
 
     muiTableContainerProps: {
       sx: {
-        maxHeight: "100%",
+        maxHeight: "calc(100% - 16px)", // Account for padding
       },
     },
     muiTablePaperProps: {
-      variant: "outlined",
+      elevation: 0,
       sx: {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        bgcolor: "transparent",
+        boxShadow: "none",
       },
     },
     muiTableProps: {
       size: "small",
       stickyHeader: true,
+      sx: {
+        "& .MuiTableBody-root": {
+          bgcolor: "background.paper",
+        },
+        "& .MuiTableCell-body": {
+          bgcolor: "background.paper",
+        },
+      },
     },
+    muiTableHeadCellProps: {
+      sx: {
+        fontWeight: "bold",
+        bgcolor: "action.hover",
+      },
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      onClick: onRowClick
+        ? () => {
+            onRowClick(row.original);
+          }
+        : undefined,
+      sx: {
+        cursor: onRowClick ? "pointer" : "default",
+        bgcolor: "background.paper",
+        "&:hover": onRowClick
+          ? {
+              backgroundColor: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(0, 0, 0, 0.04)",
+            }
+          : {},
+      },
+    }),
     layoutMode: "grid", // Use grid layout for better column sizing
     defaultColumn: {
       minSize: 80,
