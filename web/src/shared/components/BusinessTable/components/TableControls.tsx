@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Box } from "@mui/material";
 import { useTableState } from "../hooks";
 import { SearchInput, FilterPanel, ColumnPanel } from "./index";
 
-export function TableControls() {
+export const TableControls = memo(function TableControls() {
   const { config } = useTableState();
   const { features } = config;
 
@@ -26,4 +27,4 @@ export function TableControls() {
       </Box>
     </Box>
   );
-}
+});

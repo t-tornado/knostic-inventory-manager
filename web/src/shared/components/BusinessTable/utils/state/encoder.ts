@@ -8,9 +8,14 @@ export function encodeTableStateToParams(
 ): TableRequestParams {
   const params: TableRequestParams = {};
 
-  // Add filters
+  // Add filters (strip frontend-specific fields like id and source)
   if (state.filters.length > 0) {
-    params.filters = JSON.stringify(state.filters);
+    const apiFilters = state.filters.map((filter) => ({
+      field: filter.field,
+      operator: filter.operator,
+      value: filter.value,
+    }));
+    params.filters = JSON.stringify(apiFilters);
   }
 
   // Add search

@@ -222,23 +222,6 @@ export function tableReducer(
     }
 
     // ========================================================================
-    // Loading/Error Actions
-    // ========================================================================
-    case "LOADING_SET": {
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-    }
-
-    case "ERROR_SET": {
-      return {
-        ...state,
-        error: action.payload,
-      };
-    }
-
-    // ========================================================================
     // State Management Actions
     // ========================================================================
     case "STATE_RESET": {

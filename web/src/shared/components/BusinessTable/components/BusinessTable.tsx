@@ -19,6 +19,7 @@ function BusinessTableInner({
     meta,
     isLoading,
     error,
+    refetch,
     updateRowById,
     upsertRowById,
     deleteRowById,
@@ -67,20 +68,16 @@ function BusinessTableInner({
     }
   }, [state.filters, onFiltersChange]);
 
-  if (error) {
-    return (
-      <Box p={3}>
-        <div>Error loading data: {error.message}</div>
-      </Box>
-    );
-  }
-
+  // TableControls and TablePagination are memoized, so they only re-render
+  // when their dependencies change (UI state for TableControls, meta for TablePagination)
+  // The Table component is the only one that depends on isLoading/error/data
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
-        minHeight: 400,
+        height: "100%",
+        minHeight: 600,
         bgcolor: "background.paper",
         borderRadius: 3,
         border: 1,
@@ -91,7 +88,12 @@ function BusinessTableInner({
     >
       <TableControls />
       <Box sx={{ flex: 1, overflow: "auto", minHeight: 0, p: 2 }}>
-        <Table data={data} isLoading={isLoading} />
+        <Table
+          data={data}
+          isLoading={isLoading}
+          error={error}
+          refetch={refetch}
+        />
       </Box>
       <TablePagination meta={meta} />
     </Box>

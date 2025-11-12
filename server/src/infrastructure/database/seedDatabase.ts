@@ -8,9 +8,8 @@ export async function seedDatabase(
   storeRepository: IStoreRepository,
   productRepository: IProductRepository
 ): Promise<void> {
-  // Check if database is already seeded
   const existingStores = await storeRepository.findAll();
-  if (existingStores.length > 0) {
+  if (existingStores.data.length > 0) {
     console.log("Database already contains data, skipping seed");
     return;
   }
