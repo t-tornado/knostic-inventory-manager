@@ -1,4 +1,4 @@
-import type { TableState, ColumnSort, PaginationState } from "../../types";
+import type { ColumnSort, PaginationState } from "../../types";
 import type {
   MRT_SortingState,
   MRT_PaginationState,
