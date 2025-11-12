@@ -129,8 +129,10 @@ export function Table({ data, isLoading }: TableProps) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "transparent",
         boxShadow: "none",
+        "& .MuiBox-root": {
+          backgroundColor: "background.default",
+        },
       },
     },
     muiTableProps: {
@@ -142,6 +144,9 @@ export function Table({ data, isLoading }: TableProps) {
         },
         "& .MuiTableCell-body": {
           bgcolor: "background.paper",
+        },
+        "& .MuiTableCell-head": {
+          bgcolor: "background.default",
         },
       },
     },

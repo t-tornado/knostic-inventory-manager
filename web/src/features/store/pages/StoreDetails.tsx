@@ -116,6 +116,106 @@ const tableCustomization: TableCustomization = {
   },
 };
 
+const storeCatalog = [
+  { id: "1", name: "Main Store" },
+  { id: "2", name: "Downtown Branch" },
+  { id: "3", name: "Tech Hub" },
+  { id: "4", name: "West Branch" },
+  { id: "5", name: "East Branch" },
+  { id: "6", name: "North Plaza" },
+  { id: "7", name: "South Center" },
+  { id: "8", name: "Central Mall" },
+] as const;
+
+const productTemplates = [
+  {
+    suffix: "01",
+    name: 'Laptop Pro 15"',
+    category: "Electronics",
+    baseStock: 22,
+    basePrice: 1299.99,
+  },
+  {
+    suffix: "02",
+    name: "Wireless Mouse",
+    category: "Accessories",
+    baseStock: 40,
+    basePrice: 29.99,
+  },
+  {
+    suffix: "03",
+    name: "USB-C Cable",
+    category: "Cables",
+    baseStock: 18,
+    basePrice: 12.99,
+  },
+  {
+    suffix: "04",
+    name: "Gaming Keyboard",
+    category: "Accessories",
+    baseStock: 28,
+    basePrice: 89.99,
+  },
+  {
+    suffix: "05",
+    name: 'Monitor 27" 4K',
+    category: "Electronics",
+    baseStock: 14,
+    basePrice: 449.99,
+  },
+  {
+    suffix: "06",
+    name: "Webcam HD",
+    category: "Accessories",
+    baseStock: 24,
+    basePrice: 79.99,
+  },
+  {
+    suffix: "07",
+    name: "SSD 1TB",
+    category: "Hardware",
+    baseStock: 34,
+    basePrice: 129.99,
+  },
+  {
+    suffix: "08",
+    name: "RAM 16GB DDR4",
+    category: "Hardware",
+    baseStock: 38,
+    basePrice: 89.99,
+  },
+] as const;
+
+const storeProductsById: Record<string, ProductWithStoreName[]> =
+  storeCatalog.reduce((acc, store, storeIndex) => {
+    const products = productTemplates.map((template, templateIndex) => {
+      const created = new Date(
+        Date.UTC(2024, 0, 10 + storeIndex + templateIndex)
+      );
+      const updated = new Date(
+        Date.UTC(2024, 0, 15 + storeIndex + templateIndex)
+      );
+      const stockVariation =
+        template.baseStock - storeIndex * 2 + templateIndex;
+      const priceVariation = template.basePrice * (1 + storeIndex * 0.03);
+
+      return {
+        id: `PRD-${store.id}${template.suffix}` as ProductId,
+        storeId: store.id as any,
+        storeName: store.name,
+        name: template.name,
+        category: template.category,
+        stockQuantity: Math.max(6, Math.round(stockVariation)),
+        price: Number(priceVariation.toFixed(2)) as Price,
+        createdAt: created.toISOString() as ISODateTime,
+        updatedAt: updated.toISOString() as ISODateTime,
+      };
+    });
+
+    acc[store.id] = products;
+    return acc;
+  }, {} as Record<string, ProductWithStoreName[]>);
+
 // Mock products data for a store
 const getStoreProductsData = async (
   storeId: string,
@@ -123,92 +223,10 @@ const getStoreProductsData = async (
 ): Promise<TableResponse> => {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  // Mock products for the store
-  const allProducts: ProductWithStoreName[] = [
-    {
-      id: "PRD-001" as ProductId,
-      storeId: "1" as any,
-      name: 'Laptop Pro 15"',
-      category: "Electronics",
-      stockQuantity: 23,
-      price: 1299.99 as Price,
-      createdAt: "2024-01-16T10:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-20T14:30:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-002" as ProductId,
-      storeId: "1" as any,
-      name: "Wireless Mouse",
-      category: "Accessories",
-      stockQuantity: 45,
-      price: 29.99 as Price,
-      createdAt: "2024-01-17T09:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-21T11:20:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-003" as ProductId,
-      storeId: "1" as any,
-      name: "USB-C Cable",
-      category: "Cables",
-      stockQuantity: 8,
-      price: 12.99 as Price,
-      createdAt: "2024-01-18T08:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-22T16:45:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-004" as ProductId,
-      storeId: "1" as any,
-      name: "Gaming Keyboard",
-      category: "Accessories",
-      stockQuantity: 32,
-      price: 89.99 as Price,
-      createdAt: "2024-01-19T10:30:00Z" as ISODateTime,
-      updatedAt: "2024-01-23T09:15:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-005" as ProductId,
-      storeId: "1" as any,
-      name: 'Monitor 27" 4K',
-      category: "Electronics",
-      stockQuantity: 15,
-      price: 449.99 as Price,
-      createdAt: "2024-01-20T11:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-24T13:30:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-006" as ProductId,
-      storeId: "1" as any,
-      name: "Webcam HD",
-      category: "Accessories",
-      stockQuantity: 28,
-      price: 79.99 as Price,
-      createdAt: "2024-01-21T12:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-25T10:00:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-007" as ProductId,
-      storeId: "1" as any,
-      name: "SSD 1TB",
-      category: "Hardware",
-      stockQuantity: 52,
-      price: 129.99 as Price,
-      createdAt: "2024-01-22T13:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-26T15:20:00Z" as ISODateTime,
-    },
-    {
-      id: "PRD-008" as ProductId,
-      storeId: "1" as any,
-      name: "RAM 16GB DDR4",
-      category: "Hardware",
-      stockQuantity: 67,
-      price: 89.99 as Price,
-      createdAt: "2024-01-23T14:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-27T11:45:00Z" as ISODateTime,
-    },
-  ];
+  const storeProducts = storeProductsById[storeId] ?? [];
 
   // Filter by storeId
-  let filtered = allProducts.filter((p) => p.storeId === storeId);
+  let filtered = [...storeProducts];
 
   // Apply search
   if (params.search) {
