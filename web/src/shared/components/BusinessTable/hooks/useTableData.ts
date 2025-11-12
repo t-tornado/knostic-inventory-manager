@@ -108,6 +108,49 @@ export function useTableData() {
     [queryClient, queryKey, resolveRowId]
   );
 
+  const upsertRowById = useCallback(
+    (rowId: string | number | undefined, newRow: any) => {
+      const resolvedId = rowId ?? resolveRowId(newRow);
+      if (resolvedId === undefined || resolvedId === null) return;
+
+      queryClient.setQueryData(queryKey, (old: any) => {
+        if (!old) return old;
+
+        let found = false;
+        const nextData = old.data.map((row: any) => {
+          if (resolveRowId(row) === resolvedId) {
+            found = true;
+            return { ...newRow };
+          }
+          return row;
+        });
+
+        if (!found) {
+          nextData.unshift({ ...newRow });
+        }
+
+        const nextMeta = {
+          ...old.meta,
+          total: found
+            ? old.meta?.total ?? nextData.length
+            : (old.meta?.total ?? old.data.length) + 1,
+        };
+
+        dispatch({
+          type: "PAGINATION_SET",
+          payload: { total: nextMeta.total },
+        });
+
+        return {
+          ...old,
+          data: nextData,
+          meta: nextMeta,
+        };
+      });
+    },
+    [dispatch, queryClient, queryKey, resolveRowId]
+  );
+
   const deleteRowById = useCallback(
     (rowId: string | number) => {
       if (rowId === undefined || rowId === null) return;
@@ -158,6 +201,7 @@ export function useTableData() {
     error: query.error,
     refetch: query.refetch,
     updateRowById,
+    upsertRowById,
     deleteRowById,
   };
 }

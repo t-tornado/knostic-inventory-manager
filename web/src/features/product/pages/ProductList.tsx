@@ -16,6 +16,7 @@ import { ProductTableHeaderActions } from "../components";
 import { EditProductModal } from "@/shared/components/EditProductModal";
 import type { ProductId } from "@/core/models/product/model";
 import type { ISODateTime, Price } from "@/core/models/ValueObjects";
+import { storeSeedData } from "@/features/store/data/stores";
 import type { ProductWithStoreName } from "../types";
 
 // Define the table schema for products
@@ -321,16 +322,10 @@ const getProductsData = async (
   };
 };
 
-const storeOptions = [
-  { id: "1", name: "Main Store" },
-  { id: "2", name: "Downtown Branch" },
-  { id: "3", name: "Tech Hub" },
-  { id: "4", name: "West Branch" },
-  { id: "5", name: "East Branch" },
-  { id: "6", name: "North Plaza" },
-  { id: "7", name: "South Center" },
-  { id: "8", name: "Central Mall" },
-];
+const storeOptions = storeSeedData.map((store) => ({
+  id: store.id,
+  name: store.name,
+}));
 
 const categoryOptions = [
   "Electronics",

@@ -1,7 +1,11 @@
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
-import { BusinessTable } from "@/shared/components/BusinessTable";
+import {
+  BusinessTable,
+  type BusinessTableHandle,
+} from "@/shared/components/BusinessTable";
 import type {
   TableSchema,
   TableRequestParams,
@@ -11,7 +15,9 @@ import type {
 } from "@/shared/components/BusinessTable";
 import { StoreTableHeaderActions } from "../components";
 import type { Store, StoreId } from "@/core/models/store/model";
-import type { ISODateTime } from "@/core/models/ValueObjects";
+import { EditStoreModal } from "@/shared/components/EditStoreModal";
+import { storeSeedData } from "../data/stores";
+import { StoreId as StoreIdComponent } from "../components/ui";
 
 // Define the table schema for stores
 const storesSchema: TableSchema = {
@@ -35,31 +41,6 @@ const storesSchema: TableSchema = {
   },
 };
 
-// Customization for date formatting
-const tableCustomization: TableCustomization = {
-  formatFieldLabel: (field: string) => {
-    const labels: Record<string, string> = {
-      id: "ID",
-      name: "Store Name",
-      createdAt: "Created At",
-      updatedAt: "Updated At",
-    };
-    return labels[field] || field;
-  },
-  renderCellValue: (column: Column, rowData: any) => {
-    const value = column.accessor(rowData);
-
-    // Format dates
-    if (column.field === "createdAt" || column.field === "updatedAt") {
-      if (value) {
-        return new Date(value as string).toLocaleDateString();
-      }
-    }
-
-    return value ?? "-";
-  },
-};
-
 // Mock data service - replace with real API call later
 const getStoresData = async (
   params: TableRequestParams
@@ -67,57 +48,7 @@ const getStoresData = async (
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  // Mock data
-  const mockStores: Store[] = [
-    {
-      id: "1" as StoreId,
-      name: "Main Store",
-      createdAt: "2024-01-15T10:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-20T14:30:00Z" as ISODateTime,
-    },
-    {
-      id: "2" as StoreId,
-      name: "Downtown Branch",
-      createdAt: "2024-01-16T09:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-21T11:20:00Z" as ISODateTime,
-    },
-    {
-      id: "3" as StoreId,
-      name: "Tech Hub",
-      createdAt: "2024-01-17T08:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-22T16:45:00Z" as ISODateTime,
-    },
-    {
-      id: "4" as StoreId,
-      name: "West Branch",
-      createdAt: "2024-01-18T10:30:00Z" as ISODateTime,
-      updatedAt: "2024-01-23T09:15:00Z" as ISODateTime,
-    },
-    {
-      id: "5" as StoreId,
-      name: "East Branch",
-      createdAt: "2024-01-19T11:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-24T13:30:00Z" as ISODateTime,
-    },
-    {
-      id: "6" as StoreId,
-      name: "North Plaza",
-      createdAt: "2024-01-20T12:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-25T10:00:00Z" as ISODateTime,
-    },
-    {
-      id: "7" as StoreId,
-      name: "South Center",
-      createdAt: "2024-01-21T13:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-26T15:20:00Z" as ISODateTime,
-    },
-    {
-      id: "8" as StoreId,
-      name: "Central Mall",
-      createdAt: "2024-01-22T14:00:00Z" as ISODateTime,
-      updatedAt: "2024-01-27T11:45:00Z" as ISODateTime,
-    },
-  ];
+  const mockStores: Store[] = storeSeedData.map((store) => ({ ...store }));
 
   // Apply filters (simplified - in real app, this would be done server-side)
   let filtered = [...mockStores];
@@ -181,6 +112,9 @@ const getStoresData = async (
 };
 
 export const StoreList = () => {
+  const tableRef = useRef<BusinessTableHandle | null>(null);
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleExport = () => {
@@ -189,17 +123,84 @@ export const StoreList = () => {
   };
 
   const handleNewStore = () => {
-    console.log("New store");
-    // TODO: Navigate to new store page or open modal
+    setSelectedStore(null);
+    setModalOpen(true);
   };
 
   const handleRowClick = (row: Store) => {
-    navigate(`/stores/${row.id}`);
+    setSelectedStore(row);
+    setModalOpen(true);
   };
 
   const handleFiltersChange = (filters: any[]) => {
     // Update URL or perform other side effects
     console.log("Filters changed:", filters);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedStore(null);
+  };
+
+  const handleSaveStore = (store: Store) => {
+    if (selectedStore) {
+      tableRef.current?.updateRow(store.id, store);
+      const seedIndex = storeSeedData.findIndex((seed) => seed.id === store.id);
+      if (seedIndex >= 0) {
+        storeSeedData[seedIndex] = { ...storeSeedData[seedIndex], ...store };
+      }
+    } else {
+      tableRef.current?.upsertRow(store.id, store);
+      storeSeedData.push(store);
+    }
+    handleCloseModal();
+  };
+
+  const handleDeleteStore = (storeId: StoreId) => {
+    tableRef.current?.deleteRow(storeId);
+    handleCloseModal();
+  };
+
+  const handleOnClickStoreId = (
+    e: React.MouseEvent<HTMLDivElement>,
+    store: Store
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/stores/${store.id}`);
+  };
+
+  const tableCustomization: TableCustomization = {
+    formatFieldLabel: (field: string) => {
+      const labels: Record<string, string> = {
+        id: "ID",
+        name: "Store Name",
+        createdAt: "Created At",
+        updatedAt: "Updated At",
+      };
+      return labels[field] || field;
+    },
+    renderCellValue: (column: Column, rowData: any) => {
+      const value = column.accessor(rowData);
+
+      if (column.field === "createdAt" || column.field === "updatedAt") {
+        if (value) {
+          return new Date(value as string).toLocaleDateString();
+        }
+      }
+      if (column.field === "id") {
+        return (
+          <StoreIdComponent
+            isLink
+            onClick={(e) => handleOnClickStoreId(e, rowData)}
+          >
+            {value}
+          </StoreIdComponent>
+        );
+      }
+
+      return value ?? "-";
+    },
   };
 
   return (
@@ -214,6 +215,7 @@ export const StoreList = () => {
       }
     >
       <BusinessTable
+        ref={tableRef}
         schema={storesSchema}
         processingMode='server'
         getData={getStoresData}
@@ -228,6 +230,13 @@ export const StoreList = () => {
           enableColumnResizing: true,
           enableColumnReordering: true,
         }}
+      />
+      <EditStoreModal
+        open={isModalOpen}
+        store={selectedStore}
+        onClose={handleCloseModal}
+        onSave={handleSaveStore}
+        onDelete={handleDeleteStore}
       />
     </PageLayout>
   );

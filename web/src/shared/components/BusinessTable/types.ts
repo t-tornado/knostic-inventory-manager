@@ -290,5 +290,6 @@ export interface BusinessTableProps extends TableConfig {
 
 export interface BusinessTableHandle {
   updateRow: (rowId: string | number, updatedRow: any) => void;
+  upsertRow: (rowId: string | number | undefined, row: any) => void;
   deleteRow: (rowId: string | number) => void;
 }

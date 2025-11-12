@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
 import {
@@ -35,7 +35,13 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import type { ProductId } from "@/core/models/product/model";
 import type { ISODateTime, Price } from "@/core/models/ValueObjects";
 import { EditProductModal } from "@/shared/components/EditProductModal";
+import { EditStoreModal } from "@/shared/components/EditStoreModal";
+import { storeSeedData } from "../data/stores";
 import type { ProductWithStoreName } from "@/features/product/types";
+import type {
+  Store as StoreModel,
+  StoreId as StoreIdentifier,
+} from "@/core/models/store/model";
 
 // Define the table schema for store products (no storeName field needed)
 const storeProductsSchema: TableSchema = {
@@ -117,17 +123,6 @@ const tableCustomization: TableCustomization = {
   },
 };
 
-const storeCatalog = [
-  { id: "1", name: "Main Store" },
-  { id: "2", name: "Downtown Branch" },
-  { id: "3", name: "Tech Hub" },
-  { id: "4", name: "West Branch" },
-  { id: "5", name: "East Branch" },
-  { id: "6", name: "North Plaza" },
-  { id: "7", name: "South Center" },
-  { id: "8", name: "Central Mall" },
-] as const;
-
 const productTemplates = [
   {
     suffix: "01",
@@ -188,7 +183,7 @@ const productTemplates = [
 ] as const;
 
 const storeProductsById: Record<string, ProductWithStoreName[]> =
-  storeCatalog.reduce((acc, store, storeIndex) => {
+  storeSeedData.reduce((acc, store, storeIndex) => {
     const products = productTemplates.map((template, templateIndex) => {
       const created = new Date(
         Date.UTC(2024, 0, 10 + storeIndex + templateIndex)
@@ -292,21 +287,43 @@ const getStoreProductsData = async (
 
 export const StoreDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const storeId = id || "1";
+  const initialStore =
+    storeSeedData.find((store) => store.id === storeId) ?? storeSeedData[0];
+  const [storeInfo, setStoreInfo] = useState<StoreModel>(
+    initialStore ?? {
+      id: storeId as StoreModel["id"],
+      name: "Store",
+      createdAt: new Date().toISOString() as ISODateTime,
+      updatedAt: new Date().toISOString() as ISODateTime,
+    }
+  );
+  const [isStoreModalOpen, setStoreModalOpen] = useState(false);
   const tableRef = useRef<BusinessTableHandle | null>(null);
   const [selectedProduct, setSelectedProduct] =
     useState<ProductWithStoreName | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
+  useEffect(() => {
+    const nextStore =
+      storeSeedData.find((store) => store.id === storeId) ?? storeSeedData[0];
+    if (nextStore) {
+      setStoreInfo(nextStore);
+    }
+  }, [storeId]);
+
   // Mock store stats - in real app, calculate from products
-  const totalProducts = 142;
+  const totalProducts = storeProductsById[storeId]?.length ?? 0;
   const totalValue = 45230;
   const lowStockItems = 8;
-  const createdDate = "Jan 15, 2024";
+  const createdDate = new Date(storeInfo.createdAt).toLocaleDateString(
+    undefined,
+    { dateStyle: "medium" }
+  );
 
   const handleEditStore = () => {
-    console.log("Edit store");
-    // TODO: Navigate to edit store page or open modal
+    setStoreModalOpen(true);
   };
 
   const handleAddProduct = () => {
@@ -342,9 +359,48 @@ export const StoreDetails = () => {
     handleCloseDetail();
   };
 
-  const storeOptions = storeCatalog.map((store) => ({
+  const handleSaveStoreInfo = (updatedStore: StoreModel) => {
+    setStoreInfo(updatedStore);
+    if (storeProductsById[updatedStore.id]) {
+      storeProductsById[updatedStore.id] = storeProductsById[
+        updatedStore.id
+      ].map((product) => ({
+        ...product,
+        storeName: updatedStore.name,
+      }));
+    }
+    const seedIndex = storeSeedData.findIndex(
+      (store) => store.id === updatedStore.id
+    );
+    if (seedIndex >= 0) {
+      storeSeedData[seedIndex] = {
+        ...storeSeedData[seedIndex],
+        ...updatedStore,
+      };
+    }
+    setStoreModalOpen(false);
+  };
+
+  const handleDeleteStoreInfo = (targetStoreId: StoreIdentifier) => {
+    // Remove store from seed data
+    const storeIndex = storeSeedData.findIndex(
+      (store) => store.id === targetStoreId
+    );
+    if (storeIndex >= 0) {
+      storeSeedData.splice(storeIndex, 1);
+    }
+
+    // Remove associated products
+    delete storeProductsById[targetStoreId];
+
+    // Close modal and navigate to stores page
+    setStoreModalOpen(false);
+    navigate("/stores");
+  };
+
+  const storeOptions = storeSeedData.map((store) => ({
     id: store.id,
-    name: store.name,
+    name: store.id === storeInfo.id ? storeInfo.name : store.name,
   }));
 
   const categoryOptions = storeProductsSchema.products.category
@@ -370,8 +426,8 @@ export const StoreDetails = () => {
           <StoreInfoMain>
             <StoreIconComponent />
             <StoreInfoDetails>
-              <StoreName>Main Store</StoreName>
-              <StoreId>ST-001</StoreId>
+              <StoreName>{storeInfo.name}</StoreName>
+              <StoreId>{storeInfo.id}</StoreId>
             </StoreInfoDetails>
           </StoreInfoMain>
           <StoreInfoActions>
@@ -438,6 +494,13 @@ export const StoreDetails = () => {
         onClose={handleCloseDetail}
         onSave={handleSaveProduct}
         onDelete={handleDeleteProduct}
+      />
+      <EditStoreModal
+        open={isStoreModalOpen}
+        store={storeInfo}
+        onClose={() => setStoreModalOpen(false)}
+        onSave={handleSaveStoreInfo}
+        onDelete={handleDeleteStoreInfo}
       />
     </PageLayout>
   );

@@ -30,8 +30,8 @@ export function Table({ data, isLoading }: TableProps) {
 
   // Transform columns to MRT format
   const mrtColumns = useMemo<MRT_ColumnDef<any>[]>(() => {
-    return transformColumnsToMRT(visibleColumns);
-  }, [visibleColumns]);
+    return transformColumnsToMRT(visibleColumns, config.customization);
+  }, [visibleColumns, config.customization]);
 
   // Transform sorting state
   const mrtSorting = useMemo<MRT_SortingState>(() => {
