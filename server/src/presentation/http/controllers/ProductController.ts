@@ -6,12 +6,13 @@ import {
   createNotFoundError,
   createInternalServerError,
 } from "../../../domain/errors";
+import { apiPath } from "../../../shared/config/apiVersion";
 
 export class ProductController {
   constructor(private productService: ProductService) {}
 
   async getAllProducts(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/products";
+    const path = apiPath("/products");
     try {
       const products = await this.productService.getAllProducts();
       const response = successResponse(products, path, "GET");
@@ -34,7 +35,7 @@ export class ProductController {
 
   async getProductById(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/products/${id}`;
+    const path = apiPath(`/products/${id}`);
 
     if (!id) {
       const response = errorResponse(
@@ -93,7 +94,7 @@ export class ProductController {
     res: IHttpResponse
   ): Promise<void> {
     const { storeId } = req.params;
-    const path = `/api/stores/${storeId}/products`;
+    const path = apiPath(`/stores/${storeId}/products`);
 
     if (!storeId) {
       const response = errorResponse(
@@ -132,7 +133,7 @@ export class ProductController {
   }
 
   async createProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/products";
+    const path = apiPath("/products");
     const body = req.body as {
       storeId?: string;
       name?: string;
@@ -222,7 +223,7 @@ export class ProductController {
 
   async updateProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/products/${id}`;
+    const path = apiPath(`/products/${id}`);
     const body = req.body as {
       storeId?: string;
       name?: string;
@@ -287,7 +288,7 @@ export class ProductController {
 
   async deleteProduct(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/products/${id}`;
+    const path = apiPath(`/products/${id}`);
 
     if (!id) {
       const response = errorResponse(

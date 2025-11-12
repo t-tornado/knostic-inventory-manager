@@ -6,12 +6,13 @@ import {
   createNotFoundError,
   createInternalServerError,
 } from "../../../domain/errors";
+import { apiPath } from "../../../shared/config/apiVersion";
 
 export class StoreController {
   constructor(private storeService: StoreService) {}
 
   async getAllStores(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/stores";
+    const path = apiPath("/stores");
     try {
       const stores = await this.storeService.getAllStores();
       const response = successResponse(stores, path, "GET");
@@ -34,7 +35,7 @@ export class StoreController {
 
   async getStoreById(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/stores/${id}`;
+    const path = apiPath(`/stores/${id}`);
 
     if (!id) {
       const response = errorResponse(
@@ -89,7 +90,7 @@ export class StoreController {
   }
 
   async createStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
-    const path = "/api/stores";
+    const path = apiPath("/stores");
     const { name } = req.body as { name?: string };
 
     const errors = [];
@@ -131,7 +132,7 @@ export class StoreController {
 
   async updateStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/stores/${id}`;
+    const path = apiPath(`/stores/${id}`);
     const { name } = req.body as { name?: string };
 
     const errors = [];
@@ -186,7 +187,7 @@ export class StoreController {
 
   async deleteStore(req: IHttpRequest, res: IHttpResponse): Promise<void> {
     const { id } = req.params;
-    const path = `/api/stores/${id}`;
+    const path = apiPath(`/stores/${id}`);
 
     if (!id) {
       const response = errorResponse(
