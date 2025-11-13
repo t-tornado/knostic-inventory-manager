@@ -29,12 +29,12 @@ export class StoreService {
   }
 
   async getStoreById(id: string): Promise<Store | null> {
-    const storeId = createStoreId(id);
+    const storeId = createStoreId(Number(id));
     return this.storeRepository.findById(storeId);
   }
 
   async getStoreDetails(id: string): Promise<StoreDetails | null> {
-    const storeId = createStoreId(id);
+    const storeId = createStoreId(Number(id));
     const store = await this.storeRepository.findById(storeId);
     if (!store) {
       return null;
@@ -65,15 +65,13 @@ export class StoreService {
   }
 
   async createStore(data: { name: string }): Promise<Store> {
-    const id = createStoreId(`STR-${Date.now()}`);
     return this.storeRepository.create({
-      id,
       name: data.name.trim(),
     });
   }
 
   async updateStore(id: string, data: { name?: string }): Promise<Store> {
-    const storeId = createStoreId(id);
+    const storeId = createStoreId(Number(id));
     const updates: Partial<Omit<Store, "id" | "createdAt">> = {};
     if (data.name !== undefined) {
       updates.name = data.name.trim();
@@ -82,7 +80,7 @@ export class StoreService {
   }
 
   async deleteStore(id: string): Promise<boolean> {
-    const storeId = createStoreId(id);
+    const storeId = createStoreId(Number(id));
     // Delete associated products first (handled by CASCADE in DB, but explicit for clarity)
     await this.productRepository.deleteByStoreId(storeId);
     return this.storeRepository.delete(storeId);

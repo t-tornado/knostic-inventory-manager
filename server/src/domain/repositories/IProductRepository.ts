@@ -25,7 +25,9 @@ export interface IProductRepository {
     storeId: StoreId,
     params?: ProductQueryParams
   ): Promise<ProductQueryResult>;
-  create(product: Omit<Product, "createdAt" | "updatedAt">): Promise<Product>;
+  create(
+    product: Omit<Product, "id" | "createdAt" | "updatedAt">
+  ): Promise<Product>;
   update(
     id: ProductId,
     product: Partial<Omit<Product, "id" | "createdAt">>

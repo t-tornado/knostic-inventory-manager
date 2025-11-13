@@ -23,12 +23,12 @@ export class ProductService {
   }
 
   async getProductById(id: string): Promise<Product | null> {
-    const productId = createProductId(id);
+    const productId = createProductId(Number(id));
     return this.productRepository.findById(productId);
   }
 
   async getProductsByStoreId(storeId: string): Promise<Product[]> {
-    const id = createStoreId(storeId);
+    const id = createStoreId(Number(storeId));
     return this.productRepository.findByStoreId(id);
   }
 
@@ -36,7 +36,7 @@ export class ProductService {
     storeId: string,
     params?: ProductQueryParams
   ): Promise<ProductQueryResult> {
-    const id = createStoreId(storeId);
+    const id = createStoreId(Number(storeId));
     return this.productRepository.findByStoreIdWithParams(id, params);
   }
 
@@ -47,10 +47,8 @@ export class ProductService {
     stockQuantity: number;
     price: number;
   }): Promise<Product> {
-    const id = createProductId(`PRD-${Date.now()}`);
     return this.productRepository.create({
-      id,
-      storeId: createStoreId(data.storeId),
+      storeId: createStoreId(Number(data.storeId)),
       name: data.name.trim(),
       category: data.category.trim(),
       stockQuantity: data.stockQuantity,
@@ -68,11 +66,11 @@ export class ProductService {
       price?: number;
     }
   ): Promise<Product> {
-    const productId = createProductId(id);
+    const productId = createProductId(Number(id));
     const updates: Partial<Omit<Product, "id" | "createdAt">> = {};
 
     if (data.storeId !== undefined) {
-      updates.storeId = createStoreId(data.storeId);
+      updates.storeId = createStoreId(Number(data.storeId));
     }
     if (data.name !== undefined) {
       updates.name = data.name.trim();
@@ -91,7 +89,7 @@ export class ProductService {
   }
 
   async deleteProduct(id: string): Promise<boolean> {
-    const productId = createProductId(id);
+    const productId = createProductId(Number(id));
     return this.productRepository.delete(productId);
   }
 }

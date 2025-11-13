@@ -1,38 +1,30 @@
-import { createProductId, Product } from "../domain/entities/Product";
-import { createStoreId, Store } from "../domain/entities/Store";
+import type { Product } from "../domain/entities/Product";
+import type { Store } from "../domain/entities/Store";
 import { Price } from "../domain/entities/ValueObject";
 
-export const seedStores: Omit<Store, "createdAt" | "updatedAt">[] = [
+export const seedStores: Omit<Store, "id" | "createdAt" | "updatedAt">[] = [
   {
-    id: createStoreId("1"),
     name: "Main Store",
   },
   {
-    id: createStoreId("2"),
     name: "Downtown Branch",
   },
   {
-    id: createStoreId("3"),
     name: "Tech Hub",
   },
   {
-    id: createStoreId("4"),
     name: "West Branch",
   },
   {
-    id: createStoreId("5"),
     name: "East Branch",
   },
   {
-    id: createStoreId("6"),
     name: "North Plaza",
   },
   {
-    id: createStoreId("7"),
     name: "South Center",
   },
   {
-    id: createStoreId("8"),
     name: "Central Mall",
   },
 ];
@@ -97,9 +89,9 @@ const productTemplates = [
 ] as const;
 
 export function generateSeedProducts(
-  stores: Omit<Store, "createdAt" | "updatedAt">[]
-): Omit<Product, "createdAt" | "updatedAt">[] {
-  const products: Omit<Product, "createdAt" | "updatedAt">[] = [];
+  stores: Store[]
+): Omit<Product, "id" | "createdAt" | "updatedAt">[] {
+  const products: Omit<Product, "id" | "createdAt" | "updatedAt">[] = [];
 
   stores.forEach((store, storeIndex) => {
     productTemplates.forEach((template, templateIndex) => {
@@ -108,7 +100,6 @@ export function generateSeedProducts(
       const priceVariation = template.basePrice * (1 + storeIndex * 0.03);
 
       products.push({
-        id: createProductId(`PRD-${store.id}${template.suffix}`),
         storeId: store.id,
         name: template.name,
         category: template.category,

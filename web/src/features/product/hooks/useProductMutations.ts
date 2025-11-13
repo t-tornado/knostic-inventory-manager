@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { productService } from "../service";
 import { queryKeys } from "@/shared/config/queryKeys";
+import { showSuccessToast, showErrorToast } from "@/shared/utils/toast";
 
 export function useCreateProduct() {
   const queryClient = useQueryClient();
@@ -15,6 +16,10 @@ export function useCreateProduct() {
     }) => productService.createProduct(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      showSuccessToast("Product created successfully");
+    },
+    onError: (error: Error) => {
+      showErrorToast(error.message || "Failed to create product");
     },
   });
 }
@@ -42,6 +47,10 @@ export function useUpdateProduct() {
         queryKeys.products.detail(updatedProduct.id),
         updatedProduct
       );
+      showSuccessToast("Product updated successfully");
+    },
+    onError: (error: Error) => {
+      showErrorToast(error.message || "Failed to update product");
     },
   });
 }
@@ -53,6 +62,10 @@ export function useDeleteProduct() {
     mutationFn: (id: string) => productService.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      showSuccessToast("Product deleted successfully");
+    },
+    onError: (error: Error) => {
+      showErrorToast(error.message || "Failed to delete product");
     },
   });
 }

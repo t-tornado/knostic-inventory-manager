@@ -6,7 +6,6 @@ import {
   TextField,
   Button,
   Stack,
-  Typography,
   Box,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
@@ -71,22 +70,26 @@ export function EditStoreModal({
 
   const handleSubmit = () => {
     if (!validate()) return;
-    const timestamp = nowISO();
 
     if (store) {
+      // Editing existing store - send full store with updated name
+      const timestamp = nowISO();
       onSave({
         ...store,
         name: formState.name.trim(),
         updatedAt: timestamp,
       });
     } else {
-      const newStore: Store = {
-        id: `store-${Date.now()}` as string as StoreId,
+      // Creating new store - only send name to parent
+      // Parent will call API with just name, server will generate id, createdAt, updatedAt
+      // The actual store with full fields will be returned from the API
+      const tempStore: Store = {
+        id: `temp-${Date.now()}` as string as StoreId,
         name: formState.name.trim(),
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        createdAt: nowISO(),
+        updatedAt: nowISO(),
       };
-      onSave(newStore);
+      onSave(tempStore);
     }
   };
 
@@ -94,20 +97,6 @@ export function EditStoreModal({
     if (!store) return;
     onDelete(store.id);
   };
-
-  const createdDisplay = store
-    ? new Date(store.createdAt).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "Will be generated";
-
-  const updatedDisplay = store
-    ? new Date(store.updatedAt).toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "Will be generated";
 
   return (
     <Dialog
@@ -130,18 +119,6 @@ export function EditStoreModal({
             helperText={errors.name}
             fullWidth
           />
-          <Box>
-            <Typography variant='caption' color='text.secondary'>
-              Created
-            </Typography>
-            <Typography variant='body2'>{createdDisplay}</Typography>
-          </Box>
-          <Box>
-            <Typography variant='caption' color='text.secondary'>
-              Last Updated
-            </Typography>
-            <Typography variant='body2'>{updatedDisplay}</Typography>
-          </Box>
         </Stack>
       </DialogContent>
       <Box
@@ -153,18 +130,16 @@ export function EditStoreModal({
           py: 2,
         }}
       >
-        <Button
-          color='error'
-          variant='outlined'
-          onClick={handleDelete}
-          disabled={!store}
-        >
-          Delete Store
-        </Button>
+        {isEditing && (
+          <Button color='error' variant='outlined' onClick={handleDelete}>
+            Delete Store
+          </Button>
+        )}
+        {!isEditing && <Box />}
         <DialogActions sx={{ p: 0 }}>
           <Button onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} variant='contained'>
-            {isEditing ? "Save Changes" : "Create Store"}
+            {isEditing ? "Save Changes" : "Create"}
           </Button>
         </DialogActions>
       </Box>

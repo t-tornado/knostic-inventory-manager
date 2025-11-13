@@ -1,9 +1,19 @@
-import { CircularProgress } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 export const RouteLoader = () => {
   return (
-    <div>
-      <CircularProgress />
-    </div>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100vh",
+        minHeight: "100vh",
+        backgroundColor: "background.default",
+      }}
+    >
+      <CircularProgress size={48} />
+    </Box>
   );
 };

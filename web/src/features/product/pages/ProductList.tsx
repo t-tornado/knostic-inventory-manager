@@ -2,6 +2,7 @@ import { useRef, useState, useMemo } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
 import { PageError } from "@/shared/components/PageError";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import type { ProductWithStoreName } from "../types";
 import {
   BusinessTable,
   type BusinessTableHandle,
@@ -16,9 +17,8 @@ import type {
 import { ProductTableHeaderActions } from "../components";
 import { EditProductModal } from "@/shared/components/EditProductModal";
 import { productService } from "../service";
-import { useUpdateProduct, useDeleteProduct } from "../hooks";
+import { useCreateProduct, useUpdateProduct, useDeleteProduct } from "../hooks";
 import { useStores } from "@/features/store/hooks";
-import type { ProductWithStoreName } from "../types";
 import { PRODUCT_CATEGORIES } from "../constants";
 
 // Define the table schema for products
@@ -105,9 +105,12 @@ export const ProductList = () => {
   const tableRef = useRef<BusinessTableHandle | null>(null);
   const [selectedProduct, setSelectedProduct] =
     useState<ProductWithStoreName | null>(null);
+  const [originalProduct, setOriginalProduct] =
+    useState<ProductWithStoreName | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
   const { data: storesData } = useStores();
+  const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
 
@@ -149,12 +152,13 @@ export const ProductList = () => {
   };
 
   const handleNewProduct = () => {
-    console.log("New product");
-    // TODO: Create a separate CreateProductModal component
+    setSelectedProduct(null);
+    setDetailOpen(true);
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
     setSelectedProduct(row);
+    setOriginalProduct({ ...row });
     setDetailOpen(true);
   };
 
@@ -165,38 +169,66 @@ export const ProductList = () => {
   const handleCloseDetail = () => {
     setDetailOpen(false);
     setSelectedProduct(null);
+    setOriginalProduct(null);
   };
 
-  const handleSaveProduct = async (updatedProduct: ProductWithStoreName) => {
+  const handleSaveProduct = async (product: ProductWithStoreName) => {
     try {
-      const result = await updateProductMutation.mutateAsync({
-        id: updatedProduct.id,
-        data: {
-          storeId: updatedProduct.storeId,
-          name: updatedProduct.name,
-          category: updatedProduct.category,
-          stockQuantity: updatedProduct.stockQuantity,
-          price: updatedProduct.price,
-        },
-      });
-      const productWithStoreName: ProductWithStoreName = {
-        ...result,
-        storeName: storesData?.data.find((s) => s.id === result.storeId)?.name,
-      };
-      tableRef.current?.updateRow(result.id, productWithStoreName);
-      handleCloseDetail();
-    } catch (error) {
-      console.error("Failed to save product:", error);
+      if (selectedProduct) {
+        // Editing existing product
+        const result = await updateProductMutation.mutateAsync({
+          id: product.id,
+          data: {
+            storeId: product.storeId,
+            name: product.name,
+            category: product.category,
+            stockQuantity: product.stockQuantity,
+            price: product.price,
+          },
+        });
+        const productWithStoreName: ProductWithStoreName = {
+          ...result,
+          storeName: storesData?.data.find((s) => s.id === result.storeId)
+            ?.name,
+        };
+        tableRef.current?.updateRow(result.id, productWithStoreName);
+        handleCloseDetail();
+      } else {
+        // Creating new product
+        const result = await createProductMutation.mutateAsync({
+          storeId: product.storeId,
+          name: product.name,
+          category: product.category,
+          stockQuantity: product.stockQuantity,
+          price: product.price,
+        });
+        const productWithStoreName: ProductWithStoreName = {
+          ...result,
+          storeName: storesData?.data.find((s) => s.id === result.storeId)
+            ?.name,
+        };
+        tableRef.current?.upsertRow(result.id, productWithStoreName);
+        handleCloseDetail();
+      }
+    } catch {
+      if (originalProduct) {
+        setSelectedProduct(originalProduct);
+        setDetailOpen(true);
+        tableRef.current?.updateRow(originalProduct.id, originalProduct);
+      }
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    const productToDelete = selectedProduct;
     try {
       await deleteProductMutation.mutateAsync(productId);
       tableRef.current?.deleteRow(productId);
       handleCloseDetail();
-    } catch (error) {
-      console.error("Failed to delete product:", error);
+    } catch {
+      if (productToDelete) {
+        tableRef.current?.upsertRow(productToDelete.id, productToDelete);
+      }
     }
   };
 
@@ -239,17 +271,15 @@ export const ProductList = () => {
           enableColumnReordering: true,
         }}
       />
-      {selectedProduct && (
-        <EditProductModal
-          open={isDetailOpen}
-          product={selectedProduct}
-          storeOptions={storeOptions}
-          categoryOptions={categoryOptions}
-          onClose={handleCloseDetail}
-          onSave={handleSaveProduct}
-          onDelete={handleDeleteProduct}
-        />
-      )}
+      <EditProductModal
+        open={isDetailOpen}
+        product={selectedProduct}
+        storeOptions={storeOptions}
+        categoryOptions={categoryOptions}
+        onClose={handleCloseDetail}
+        onSave={handleSaveProduct}
+        onDelete={selectedProduct ? handleDeleteProduct : undefined}
+      />
     </PageLayout>
   );
 };

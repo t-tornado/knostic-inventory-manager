@@ -10,8 +10,8 @@ import type { IDatabase } from "../../infrastructure/database";
 import { buildQuery } from "./queryBuilder";
 
 interface ProductRow {
-  id: string;
-  store_id: string;
+  id: number;
+  store_id: number;
   store_name?: string;
   name: string;
   category: string;
@@ -202,13 +202,12 @@ export class ProductRepository implements IProductRepository {
   }
 
   async create(
-    product: Omit<Product, "createdAt" | "updatedAt">
+    product: Omit<Product, "id" | "createdAt" | "updatedAt">
   ): Promise<Product> {
     const now = new Date().toISOString() as ISODateTime;
-    await this.db.execute(
-      "INSERT INTO products (id, store_id, name, category, stock_quantity, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    const result = await this.db.execute(
+      "INSERT INTO products (store_id, name, category, stock_quantity, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
-        product.id,
         product.storeId,
         product.name,
         product.category,
@@ -218,8 +217,14 @@ export class ProductRepository implements IProductRepository {
         now,
       ]
     );
+    const id = result.lastID as number;
     return {
-      ...product,
+      id: id as ProductId,
+      storeId: product.storeId,
+      name: product.name,
+      category: product.category,
+      stockQuantity: product.stockQuantity,
+      price: product.price,
       createdAt: now,
       updatedAt: now,
     };
