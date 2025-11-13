@@ -10,7 +10,8 @@ export const allStoresUpdater = (
   return (old: StoreQueryUpdater) => {
     if (!old) return old;
 
-    const updatedData = old.data.map((store: Store) =>
+    const data = old.data as Store[];
+    const updatedData = data.map((store) =>
       store.id === id
         ? {
             ...store,

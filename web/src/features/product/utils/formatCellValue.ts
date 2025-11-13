@@ -1,7 +1,9 @@
 import type {
   Column,
   TableCustomization,
+  TableRowData,
 } from "@/shared/components/BusinessTable";
+import type { ReactNode } from "react";
 import { formatCurrency } from "@/shared/utils/format";
 
 export const formatProductFieldLabel = (field: string): string => {
@@ -33,8 +35,8 @@ export const formatProductFieldLabelWithoutStore = (field: string): string => {
 
 export const renderProductCellValue = (
   column: Column,
-  rowData: unknown
-): string => {
+  rowData: TableRowData
+): ReactNode => {
   const value = column.accessor(rowData);
 
   if (column.field === "price") {
@@ -51,9 +53,10 @@ export const renderProductCellValue = (
     if (value) {
       return new Date(value as string).toLocaleDateString();
     }
+    return "-";
   }
 
-  return value ?? "-";
+  return value != null ? String(value) : "-";
 };
 
 export const createProductTableCustomization = (

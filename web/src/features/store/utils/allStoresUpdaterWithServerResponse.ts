@@ -6,8 +6,9 @@ export const allStoresUpdaterWithServerResponse = (updatedStore: Store) => {
   return (old: StoreQueryUpdater) => {
     if (!old) return old;
 
-    const updatedData = old.data.map((s: Store) =>
-      s.id === updatedStore.id ? updatedStore : s
+    const data = old.data as Store[];
+    const updatedData = data.map((store) =>
+      store.id === updatedStore.id ? updatedStore : store
     );
 
     if ("meta" in old) {

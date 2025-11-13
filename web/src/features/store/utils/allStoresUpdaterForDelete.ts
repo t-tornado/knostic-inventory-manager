@@ -6,7 +6,9 @@ export const allStoresUpdaterForDelete = (deletedId: string) => {
   return (old: StoreQueryUpdater) => {
     if (!old) return old;
 
-    const filtered = old.data.filter((store: Store) => store.id !== deletedId);
+    const filtered = old.data.filter(
+      (store: unknown) => (store as Store).id !== deletedId
+    );
 
     if ("meta" in old) {
       return {

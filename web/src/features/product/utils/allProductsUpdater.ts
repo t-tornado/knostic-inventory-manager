@@ -1,4 +1,4 @@
-import { Product } from "@/core/models/product/model";
+import { Product, ProductWithStoreName } from "@/core/models/product/model";
 import { ProductQueryResult, ProductQueryUpdater } from "../types";
 import { nowISO } from "@/shared/utils/date";
 import { TableResponse } from "@/shared/components/BusinessTable";
@@ -10,7 +10,8 @@ export const allProductsUpdater = (
   return (old: ProductQueryUpdater) => {
     if (!old) return old;
 
-    const updatedData = old.data.map((product: Product) =>
+    const data = old.data as ProductWithStoreName[];
+    const updatedData = data.map((product) =>
       product.id === id
         ? {
             ...product,

@@ -1,4 +1,4 @@
-import type { Column } from "@/shared/components/BusinessTable";
+import type { Column, TableRowData } from "@/shared/components/BusinessTable";
 import type { Store } from "@/core/models/store/model";
 import { StoreId } from "../components/atoms";
 
@@ -15,8 +15,8 @@ export const formatStoreFieldLabel = (field: string): string => {
 export const createRenderStoreCellValue = (
   onStoreIdClick?: (e: React.MouseEvent<HTMLDivElement>, store: Store) => void
 ) => {
-  return (column: Column, rowData: unknown): string | React.ReactNode => {
-    const value = column.accessor(rowData);
+  return (column: Column, rowData: TableRowData): string | React.ReactNode => {
+    const value = column.accessor(rowData) as string;
 
     if (column.field === "createdAt" || column.field === "updatedAt") {
       if (value) {
@@ -30,7 +30,7 @@ export const createRenderStoreCellValue = (
           isLink={!!onStoreIdClick}
           onClick={
             onStoreIdClick
-              ? (e) => onStoreIdClick(e, rowData as Store)
+              ? (e) => onStoreIdClick(e, rowData as unknown as Store)
               : undefined
           }
         >

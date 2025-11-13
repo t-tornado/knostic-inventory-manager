@@ -11,14 +11,15 @@ export const allProductsUpdaterWithServerResponse = (
   return (old: ProductQueryUpdater) => {
     if (!old) return old;
 
+    const data = old.data as ProductWithStoreName[];
+    const existingProduct = data.find((p) => p.id === updatedProduct.id);
+
     const productWithStoreName: ProductWithStoreName = {
       ...updatedProduct,
-      storeName:
-        old.data.find((p: ProductWithStoreName) => p.id === updatedProduct.id)
-          ?.storeName || "",
+      storeName: existingProduct?.storeName || "",
     };
 
-    const updatedData = old.data.map((p: ProductWithStoreName) =>
+    const updatedData = data.map((p) =>
       p.id === updatedProduct.id ? productWithStoreName : p
     );
 

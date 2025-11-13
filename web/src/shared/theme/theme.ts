@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, type Shadows } from "@mui/material/styles";
 import { darkPalette, headerShadow, lightPalette } from "./palette";
 import { shadows } from "./tokens";
 
@@ -19,7 +19,7 @@ export const theme = createTheme({
     headerShadow.light,
     headerShadow.dark,
     ...Array(18).fill("none"),
-  ] as (string | undefined)[],
+  ] as Shadows,
   components: {
     MuiButton: {
       styleOverrides: {

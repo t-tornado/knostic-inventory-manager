@@ -1,4 +1,4 @@
-import type { ProductWithStoreName } from "@/core/models/product/model";
+import type { Product } from "@/core/models/product/model";
 import { ProductQueryResult, ProductQueryUpdater } from "../types";
 import { TableResponse } from "@/shared/components/BusinessTable";
 
@@ -7,7 +7,7 @@ export const allProductsUpdaterForDelete = (deletedId: string) => {
     if (!old) return old;
 
     const filtered = old.data.filter(
-      (product: ProductWithStoreName) => product.id !== deletedId
+      (product: unknown) => (product as Product).id !== deletedId
     );
 
     if ("meta" in old) {
