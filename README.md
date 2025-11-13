@@ -22,7 +22,6 @@ This will:
 
 - **Web Application:** http://localhost
 - **API Server:** http://localhost:3000
-- **API Health Check:** http://localhost:3000/
 
 ### Stop Services
 
@@ -134,3 +133,4 @@ RESTful API versioned at `/api/v1` with endpoints for stores, products, and dash
 3. **Type Safety:** Remove remaining `any` types and add stricter TypeScript config
 4. **Documentation:** Add JSDoc comments for public APIs and complex functions
 5. **Bundle Analysis:** Set up bundle size monitoring and implement code splitting strategy
+6. **Per-Request Observability:** Add request ID tracking, correlation IDs, and enhanced logging for better debugging and monitoring of individual requests across the application stack
