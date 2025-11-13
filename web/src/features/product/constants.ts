@@ -1,5 +1,6 @@
 import { TableSchema } from "@/shared/components/BusinessTable";
 
+// this is a const but ideally we need this on the server so that we can dynamically manage categories with the stores and the products
 export const PRODUCT_CATEGORIES = [
   "Electronics",
   "Accessories",

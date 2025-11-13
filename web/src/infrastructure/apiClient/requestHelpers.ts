@@ -1,6 +1,14 @@
 import type { IApiClient } from "./types";
 import type { ApiResponse } from "@/shared/api";
 
+/**
+ *
+ * @param response
+ *
+ * We need helpers to interact with the api client from handling requests to responses. we use this
+ * well abstracted. if we need more control, lets extend the helpers or create new ones.
+ */
+
 function handleApiResponse<T>(
   response: ApiResponse<T>,
   defaultErrorMessage: string

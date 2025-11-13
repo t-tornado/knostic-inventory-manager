@@ -1,5 +1,8 @@
 import { logger } from "./logger";
 
+/**
+ * Lets not deal directly with the localStorage here. this abstraction will provide us a safe and observable layer for the localStorage.
+ */
 class LocalStorage {
   /**
    * Get a value from localStorage and safely parse it as JSON

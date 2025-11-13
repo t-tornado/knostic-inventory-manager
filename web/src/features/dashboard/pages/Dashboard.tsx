@@ -14,6 +14,10 @@ import {
 const DASHBOARD_TITLE = "Dashboard";
 const DASHBOARD_HEADER_ICON = <ShowChartIcon />;
 
+/**
+ *
+ * @description Composition layer for the Dashboard page.
+ */
 export const DashboardPage = () => {
   const { data, isLoading, error, refetch } = useDashboard();
   const {

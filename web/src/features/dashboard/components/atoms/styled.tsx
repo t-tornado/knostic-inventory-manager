@@ -1,5 +1,10 @@
 import { Box, Button, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+/**
+ *
+ * The idea is simple, keep the core components more cleaner. inline styling pollutes the code and makes it harder to read.
+ *
+ */
 
 export const StyledSectionCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,

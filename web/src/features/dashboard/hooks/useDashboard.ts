@@ -16,7 +16,5 @@ export function useDashboard(options: UseDashboardOptions = {}) {
     queryFn: () => dashboardService.getDashboard(),
     enabled,
     refetchInterval,
-    staleTime: 30000,
-    gcTime: 300000,
   });
 }

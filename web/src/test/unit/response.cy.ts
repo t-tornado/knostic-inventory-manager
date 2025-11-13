@@ -30,7 +30,6 @@ describe("responseInterceptor", () => {
     const result = responseInterceptor(response);
 
     expect(result).to.deep.equal(response);
-    expect(result.data).to.be.null;
   });
 
   it("should handle array data", () => {
@@ -47,7 +46,6 @@ describe("responseInterceptor", () => {
 
     expect(result).to.deep.equal(response);
     expect(result.data).to.deep.equal(mockData);
-    expect(Array.isArray(result.data)).to.be.true;
     if (Array.isArray(result.data)) {
       expect(result.data).to.have.length(2);
       expect(result.data[0]).to.have.property("id", 1);

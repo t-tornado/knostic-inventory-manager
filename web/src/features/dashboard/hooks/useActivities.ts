@@ -16,7 +16,5 @@ export function useActivities(options: UseActivitiesOptions = {}) {
     queryFn: () => dashboardService.getActivities(),
     enabled,
     refetchInterval,
-    staleTime: 30000,
-    gcTime: 300000,
   });
 }
