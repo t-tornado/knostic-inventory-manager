@@ -17,12 +17,13 @@ import {
 import type {
   MRT_SortingState,
   MRT_PaginationState,
+  MRT_RowData,
 } from "material-react-table";
 import { TableErrorFallback } from "./TableErrorFallback";
 import { TableEmptyFallback } from "./TableEmptyFallback";
 
 interface TableProps {
-  data: any[];
+  data: unknown[];
   isLoading: boolean;
   error?: Error | null;
   refetch?: () => void;
@@ -32,7 +33,7 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
   const { visibleColumns, columnSorting } = useColumns();
   const { state, dispatch, config, getRowId, onRowClick } = useTableState();
 
-  const mrtColumns = useMemo<MRT_ColumnDef<any>[]>(() => {
+  const mrtColumns = useMemo<MRT_ColumnDef<MRT_RowData>[]>(() => {
     return transformColumnsToMRT(visibleColumns, config.customization);
   }, [visibleColumns, config.customization]);
 
@@ -79,14 +80,14 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
 
   const table = useMaterialReactTable({
     columns: mrtColumns,
-    data: data,
+    data: data as MRT_RowData[],
     getRowId: getRowId
       ? (row) => {
           if (!row) return String(Math.random());
           try {
             return String(getRowId(row));
           } catch {
-            return String((row as any)?.id ?? Math.random());
+            return String(row?.id ?? Math.random());
           }
         }
       : undefined,

@@ -37,36 +37,38 @@ export class WebLogger {
   }
 
   info(message: string, payload?: unknown, context?: string) {
-    this.#log("info", message, payload as any, context);
+    this.#log("info", message, payload, context);
   }
   success(message: string, payload?: unknown, context?: string) {
-    this.#log("success", message, payload as any, context);
+    this.#log("success", message, payload, context);
   }
   warning(message: string, payload?: unknown, context?: string) {
-    this.#log("warning", message, payload as any, context);
+    this.#log("warning", message, payload, context);
   }
   error(message: string, payload?: unknown, context?: string) {
-    this.#log("error", message, payload as any, context);
+    this.#log("error", message, payload, context);
   }
 
   enable() {
     try {
       const localStorageValue = localStorage.getItem(this.featureFlagKey);
       if (!localStorageValue) {
-        return (window as any)[this.featureFlagKey] === true;
+        return (
+          (window as Record<string, unknown>)[this.featureFlagKey] === true
+        );
       }
       return localStorageValue === "true";
     } catch {
-      return (window as any)[this.featureFlagKey] === true;
+      return (window as Record<string, unknown>)[this.featureFlagKey] === true;
     }
   }
 
   disable() {
     try {
       localStorage.removeItem(this.featureFlagKey);
-      (window as any)[this.featureFlagKey] = false;
+      (window as Record<string, unknown>)[this.featureFlagKey] = false;
     } catch {
-      (window as any)[this.featureFlagKey] = false;
+      (window as Record<string, unknown>)[this.featureFlagKey] = false;
     }
   }
 
@@ -76,7 +78,9 @@ export class WebLogger {
 
   #enabled(): boolean {
     try {
-      const winFlag = Boolean((window as any)[this.featureFlagKey]);
+      const winFlag = Boolean(
+        (window as Record<string, unknown>)[this.featureFlagKey]
+      );
       const localFlag = localStorage.getItem(this.featureFlagKey) === "true";
       return winFlag || localFlag;
     } catch {

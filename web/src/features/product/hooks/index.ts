@@ -1,7 +1,5 @@
 export { useProducts } from "./useProducts";
 export type { UseProductsOptions } from "./useProducts";
-export {
-  useCreateProduct,
-  useUpdateProduct,
-  useDeleteProduct,
-} from "./useProductMutations";
+export { useCreateProduct } from "./useCreateProduct";
+export { useUpdateProduct } from "./useUpdateProduct";
+export { useDeleteProduct } from "./useDeleteProduct";

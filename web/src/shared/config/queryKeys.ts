@@ -22,5 +22,6 @@ export const queryKeys = {
 
   dashboard: {
     allData: () => ["dashboard", "allData"] as const,
+    activities: () => ["dashboard", "activities"] as const,
   },
 } as const;

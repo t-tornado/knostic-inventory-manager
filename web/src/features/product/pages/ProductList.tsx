@@ -2,7 +2,7 @@ import { useRef, useState, useMemo } from "react";
 import { PageLayout } from "@/shared/components/PageLayout";
 import { PageError } from "@/shared/components/PageError";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import type { ProductWithStoreName } from "../types";
+import type { ProductWithStoreName } from "@/core/models/product/model";
 import {
   BusinessTable,
   type BusinessTableHandle,
@@ -91,27 +91,22 @@ export const ProductList = () => {
 
   const handleCreateProduct = async (data: ProductPayload) => {
     try {
-      const result = await createProductMutation.mutateAsync({
+      await createProductMutation.mutateAsync({
         storeId: data.storeId,
         name: data.name,
         category: data.category,
         stockQuantity: data.stockQuantity,
         price: data.price,
       });
-      const productWithStoreName: ProductWithStoreName = {
-        ...result,
-        storeName: storesData?.data.find((s) => s.id === result.storeId)?.name,
-      };
-      tableRef.current?.upsertRow(result.id, productWithStoreName);
       handleCloseDetail();
     } catch {
-      // Error is handled by the mutation
+      // Error is handled by the mutation (toast + rollback)
     }
   };
 
   const handleUpdateProduct = async (product: ProductWithStoreName) => {
     try {
-      const result = await updateProductMutation.mutateAsync({
+      await updateProductMutation.mutateAsync({
         id: product.id,
         data: {
           storeId: product.storeId,
@@ -121,31 +116,21 @@ export const ProductList = () => {
           price: product.price,
         },
       });
-      const productWithStoreName: ProductWithStoreName = {
-        ...result,
-        storeName: storesData?.data.find((s) => s.id === result.storeId)?.name,
-      };
-      tableRef.current?.updateRow(result.id, productWithStoreName);
       handleCloseDetail();
     } catch {
       if (originalProduct) {
         setSelectedProduct(originalProduct);
         setDetailOpen(true);
-        tableRef.current?.updateRow(originalProduct.id, originalProduct);
       }
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    const productToDelete = selectedProduct;
     try {
       await deleteProductMutation.mutateAsync(productId);
-      tableRef.current?.deleteRow(productId);
       handleCloseDetail();
     } catch {
-      if (productToDelete) {
-        tableRef.current?.upsertRow(productToDelete.id, productToDelete);
-      }
+      //
     }
   };
 
@@ -160,10 +145,11 @@ export const ProductList = () => {
       <BusinessTable
         ref={tableRef}
         schema={PRODUCTS_SCHEMA}
-        processingMode='server'
         getData={getProductsData}
         getRowId={(row) => (row?.id as string) || String(Math.random())}
-        onRowClick={handleRowClick}
+        onRowClick={(row: unknown) =>
+          handleRowClick(row as ProductWithStoreName)
+        }
         onStateChange={handleStateChange}
         initialState={urlInitialState}
         customization={createProductTableCustomization()}

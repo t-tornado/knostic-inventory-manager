@@ -1,5 +1,6 @@
 import type { Store } from "@/core/models/store/model";
 import type { Product } from "@/core/models/product/model";
+import type { TableResponse } from "@/shared/components/BusinessTable/types";
 
 export interface StoreQueryParams {
   search?: string;
@@ -51,3 +52,16 @@ export interface IStoreService {
   updateStore(id: string, data: { name: string }): Promise<Store>;
   deleteStore(id: string): Promise<void>;
 }
+
+export type StoreQueryUpdater = StoreQueryResult | TableResponse | undefined;
+
+export type StoreQueryUpdaterFn = (
+  input: StoreQueryUpdater
+) => StoreQueryUpdater;
+
+export type QueryClientStorageKey = string;
+export type QueryClientStorageValue = StoreQueryUpdater;
+export type StoreQueryUpdaterMap = Map<
+  QueryClientStorageKey,
+  QueryClientStorageValue
+>;

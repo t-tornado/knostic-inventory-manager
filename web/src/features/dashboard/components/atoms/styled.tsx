@@ -29,6 +29,14 @@ export const StyledSectionHeaderIcon = styled(Box)(({ theme }) => ({
   alignItems: "center",
 }));
 
+export const StyledSectionHeaderContent = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1),
+}));
+
+export const StyledSectionHeaderActions = styled(Box)({});
+
 export const StyledFilterButton = styled(Button)(({ theme }) => ({
   minWidth: "auto",
   paddingLeft: theme.spacing(1.5),
@@ -164,3 +172,112 @@ export const StyledActivityItemTime = styled(Typography)(({ theme }) => ({
   fontSize: 13,
   color: theme.palette.text.secondary,
 }));
+
+export const StyledActivityList = styled(Box)(({ theme }) => ({
+  maxHeight: "400px",
+  overflowY: "auto",
+  marginTop: theme.spacing(2),
+}));
+
+export const StyledEmptyState = styled(Typography)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+}));
+
+export const StyledLoadingContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "center",
+  padding: theme.spacing(3),
+}));
+
+export const StyledErrorState = styled(Typography)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: "center",
+}));
+
+export const StyledChartsGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  [theme.breakpoints.up("lg")]: {
+    gridTemplateColumns: "repeat(2, 1fr)",
+  },
+}));
+
+export const StyledStatsGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  [theme.breakpoints.up("sm")]: {
+    gridTemplateColumns: "repeat(2, 1fr)",
+  },
+  [theme.breakpoints.up("md")]: {
+    gridTemplateColumns: "repeat(4, 1fr)",
+  },
+}));
+
+export const StyledStatCard = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(4),
+  boxShadow: theme.shadows[1],
+  transition: "all 0.3s",
+  border: `1px solid ${theme.palette.divider}`,
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: theme.shadows[2],
+  },
+}));
+
+export const StyledStatCardContent = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1),
+}));
+
+export const StyledStatCardIcon = styled(Box)<{
+  bgcolor: string;
+  iconColor: string;
+}>(({ theme, bgcolor, iconColor }) => ({
+  width: 56,
+  height: 56,
+  borderRadius: theme.spacing(2),
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 24,
+  marginBottom: theme.spacing(1),
+  backgroundColor: bgcolor,
+  color: iconColor,
+}));
+
+export const StyledStatCardTitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  fontSize: 13,
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  lineHeight: 1.2,
+}));
+
+export const StyledStatCardValue = styled(Typography)(({ theme }) => ({
+  fontWeight: 700,
+  color: theme.palette.text.primary,
+  fontSize: "1.75rem",
+}));
+
+export const StyledStatCardChange = styled(Box)<{
+  isPositive: boolean;
+}>(({ theme, isPositive }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(0.5),
+  fontSize: 13,
+  color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+}));
+
+export const StyledStatCardChangeText = styled(Typography)({
+  fontSize: 13,
+});

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RawProductType } from "./types";
 
 export const productPayloadSchema = z.object({
   name: z.string().min(1, "Product name is required").trim(),
@@ -14,7 +15,8 @@ export const productPayloadSchema = z.object({
     .multipleOf(0.01, "Price must have at most 2 decimal places"),
 });
 
-export type ProductPayload = z.infer<typeof productPayloadSchema>;
+export type ProductPayload = z.infer<typeof productPayloadSchema> &
+  RawProductType;
 
 export function validateProductPayload(data: unknown) {
   return productPayloadSchema.safeParse(data);

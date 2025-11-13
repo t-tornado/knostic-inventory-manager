@@ -8,13 +8,6 @@ export interface UseStoreProductsOptions extends ProductQueryParams {
   refetchInterval?: number | false;
 }
 
-/**
- * React Query hook for fetching products for a specific store
- * Supports filtering, search, pagination, and sorting
- * @param storeId - Store ID
- * @param options - Options including query params and React Query configuration
- * @returns React Query result with store products
- */
 export function useStoreProducts(
   storeId: string,
   options: UseStoreProductsOptions = {}

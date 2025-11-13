@@ -1,4 +1,4 @@
-import type { ProductWithStoreName } from "@/features/product/types";
+import type { ProductWithStoreName } from "@/core/models/product/model";
 import { ProductMetaModalFormState } from "./types";
 
 export const createInitialState = (

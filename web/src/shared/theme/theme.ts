@@ -19,7 +19,7 @@ export const theme = createTheme({
     headerShadow.light,
     headerShadow.dark,
     ...Array(18).fill("none"),
-  ] as any,
+  ] as (string | undefined)[],
   components: {
     MuiButton: {
       styleOverrides: {

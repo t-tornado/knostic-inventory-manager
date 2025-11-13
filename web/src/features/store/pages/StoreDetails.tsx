@@ -1,8 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useCallback, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Box } from "@mui/material";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
+import { queryKeys } from "@/shared/config/queryKeys";
 import {
   BusinessTable,
   type BusinessTableHandle,
@@ -32,7 +34,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningIcon from "@mui/icons-material/Warning";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { StoreMetaModal } from "@/shared/components/StoreMetaModal";
-import type { ProductWithStoreName } from "@/features/product/types";
+import type { ProductWithStoreName } from "@/core/models/product/model";
 import type { ProductPayload } from "@/features/product/validation";
 import { useStoreDetails, useUpdateStore, useDeleteStore } from "../hooks";
 import {
@@ -55,7 +57,8 @@ import { formatDateTime } from "@/shared/utils/format";
 export const StoreDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const storeId = id || "";
+  const queryClient = useQueryClient();
+  const storeId = id ?? "";
 
   const {
     data: storeDetails,
@@ -104,7 +107,8 @@ export const StoreDetails = () => {
     setDetailOpen(true);
   };
 
-  const handleFiltersChange = (filters: any[]) => {
+  const handleFiltersChange = (filters: unknown[]) => {
+    // Filters change handler - can be extended with proper typing if needed
     console.log("Filters changed:", filters);
   };
 
@@ -127,50 +131,50 @@ export const StoreDetails = () => {
           price: updatedProduct.price,
         },
       });
-      tableRef.current?.updateRow(updatedProduct.id, updatedProduct);
-      await refetchStoreDetails();
+      // Invalidate store details to refresh stats
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.stores.detailWithStats(storeId),
+      });
       handleCloseDetail();
     } catch {
+      // Error is handled by the mutation (toast + rollback)
+      // Restore original product in modal if still open
       if (originalProduct) {
         setSelectedProduct(originalProduct);
         setDetailOpen(true);
-        tableRef.current?.updateRow(originalProduct.id, originalProduct);
       }
     }
   };
 
   const handleCreateProduct = async (data: ProductPayload) => {
     try {
-      const result = await createProductMutation.mutateAsync({
+      await createProductMutation.mutateAsync({
         storeId: storeId,
         name: data.name,
         category: data.category,
         stockQuantity: data.stockQuantity,
         price: data.price,
       });
-      const productWithStoreName: ProductWithStoreName = {
-        ...result,
-        storeName: storeInfo?.name,
-      };
-      tableRef.current?.upsertRow(result.id, productWithStoreName);
-      await refetchStoreDetails();
+      // Invalidate store details to refresh stats
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.stores.detailWithStats(storeId),
+      });
       handleCloseDetail();
     } catch {
-      //
+      // Error is handled by the mutation (toast + rollback)
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    const productToDelete = selectedProduct;
     try {
       await deleteProductMutation.mutateAsync(productId);
-      tableRef.current?.deleteRow(productId);
-      await refetchStoreDetails();
+      // Invalidate store details to refresh stats
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.stores.detailWithStats(storeId),
+      });
       handleCloseDetail();
     } catch {
-      if (productToDelete) {
-        tableRef.current?.upsertRow(productToDelete.id, productToDelete);
-      }
+      // Error is handled by the mutation (toast + rollback)
     }
   };
 
@@ -180,10 +184,12 @@ export const StoreDetails = () => {
         id: store.id,
         data: { name: store.name },
       });
-      await refetchStoreDetails();
+      // Mutation handles cache updates, no need to refetch
       setStoreModalOpen(false);
       setOriginalStore(null);
     } catch {
+      // Error is handled by the mutation (toast + rollback)
+      // Restore original store in modal if still open
       if (originalStore) {
         setStoreModalOpen(true);
       }
@@ -339,10 +345,11 @@ export const StoreDetails = () => {
             ref={tableRef}
             key={storeId}
             schema={PRODUCTS_SCHEMA}
-            processingMode='server'
             getData={getData}
-            getRowId={(row) => (row?.id as string) || String(Math.random())}
-            onRowClick={handleRowClick}
+            getRowId={(row) => row?.id as string}
+            onRowClick={(row: unknown) =>
+              handleRowClick(row as ProductWithStoreName)
+            }
             onFiltersChange={handleFiltersChange}
             customization={createProductTableCustomization(false)}
             features={{

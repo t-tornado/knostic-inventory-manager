@@ -1,9 +1,4 @@
-import type {
-  TableFeatures,
-  TableState,
-  SelectionMode,
-  ProcessingMode,
-} from "../types";
+import type { TableFeatures, TableState, SelectionMode } from "../types";
 
 export const defaultFeatures: Required<TableFeatures> = {
   enableFiltering: true,
@@ -45,5 +40,3 @@ export const defaultTableState: TableState = {
 export const defaultPageSizes = [10, 25, 50, 100];
 
 export const defaultSelectionMode: SelectionMode = "none";
-
-export const defaultProcessingMode: ProcessingMode = "server";

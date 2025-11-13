@@ -1,5 +1,7 @@
 export { useDashboard } from "./useDashboard";
 export type { UseDashboardOptions } from "./useDashboard";
+export { useActivities } from "./useActivities";
+export type { UseActivitiesOptions } from "./useActivities";
 export { useStockChart } from "./useStockChart";
 export { useStockChartData } from "./useStockChartData";
 export { useStockChartOptions } from "./useStockChartOptions";
@@ -9,3 +11,5 @@ export { useStoreChartOptions } from "./useStoreChartOptions";
 export { useValueChart } from "./useValueChart";
 export { useValueChartData } from "./useValueChartData";
 export { useValueChartOptions } from "./useValueChartOptions";
+export { useCategoryChartData } from "./useCategoryChartData";
+export { useCategoryChartOptions } from "./useCategoryChartOptions";

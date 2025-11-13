@@ -1,9 +1,7 @@
 import type { ISODateTime } from "../ValueObjects";
 
-export type StoreId = string & { readonly brand: unique symbol };
-
 export interface Store {
-  id: StoreId;
+  id: string;
   name: string;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;

@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { StatCard } from "./atoms";
 import StoreIcon from "@mui/icons-material/Store";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -6,6 +5,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningIcon from "@mui/icons-material/Warning";
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 import type { DashboardStats } from "../types";
+import { StyledStatsGrid } from "./atoms/styled";
 
 interface StatsGridProps {
   stats: DashboardStats;
@@ -13,18 +13,7 @@ interface StatsGridProps {
 
 export const StatsGrid = ({ stats }: StatsGridProps) => {
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "1fr",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(4, 1fr)",
-        },
-        gap: 3,
-        mb: 3,
-      }}
-    >
+    <StyledStatsGrid>
       <StatCard
         title='Total Stores'
         value={formatNumber(stats.totalStores)}
@@ -49,6 +38,6 @@ export const StatsGrid = ({ stats }: StatsGridProps) => {
         icon={<WarningIcon />}
         iconColor='error'
       />
-    </Box>
+    </StyledStatsGrid>
   );
 };

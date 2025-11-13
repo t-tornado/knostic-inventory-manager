@@ -15,7 +15,7 @@ export const formatStoreFieldLabel = (field: string): string => {
 export const createRenderStoreCellValue = (
   onStoreIdClick?: (e: React.MouseEvent<HTMLDivElement>, store: Store) => void
 ) => {
-  return (column: Column, rowData: any): string | React.ReactNode => {
+  return (column: Column, rowData: unknown): string | React.ReactNode => {
     const value = column.accessor(rowData);
 
     if (column.field === "createdAt" || column.field === "updatedAt") {
@@ -29,7 +29,9 @@ export const createRenderStoreCellValue = (
         <StoreId
           isLink={!!onStoreIdClick}
           onClick={
-            onStoreIdClick ? (e) => onStoreIdClick(e, rowData) : undefined
+            onStoreIdClick
+              ? (e) => onStoreIdClick(e, rowData as Store)
+              : undefined
           }
         >
           {value}

@@ -1,8 +1,9 @@
-import { Box } from "@mui/material";
 import {
   StyledSectionHeaderContainer,
   StyledSectionHeaderTitle,
   StyledSectionHeaderIcon,
+  StyledSectionHeaderContent,
+  StyledSectionHeaderActions,
 } from "./styled";
 
 interface SectionHeaderProps {
@@ -14,13 +15,15 @@ interface SectionHeaderProps {
 export const SectionHeader = ({ title, icon, actions }: SectionHeaderProps) => {
   return (
     <StyledSectionHeaderContainer>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <StyledSectionHeaderContent>
         {icon && <StyledSectionHeaderIcon>{icon}</StyledSectionHeaderIcon>}
         <StyledSectionHeaderTitle variant='h6'>
           {title}
         </StyledSectionHeaderTitle>
-      </Box>
-      {actions && <Box>{actions}</Box>}
+      </StyledSectionHeaderContent>
+      {actions && (
+        <StyledSectionHeaderActions>{actions}</StyledSectionHeaderActions>
+      )}
     </StyledSectionHeaderContainer>
   );
 };

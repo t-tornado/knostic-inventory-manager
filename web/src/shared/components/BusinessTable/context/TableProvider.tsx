@@ -10,8 +10,8 @@ import { validateConfig } from "../config/validators";
 interface TableProviderProps {
   children: React.ReactNode;
   config: TableConfig;
-  getRowId?: (row: any) => string | number;
-  onRowClick?: (row: any) => void;
+  getRowId?: (row: unknown) => string | number;
+  onRowClick?: (row: unknown) => void;
 }
 
 export function TableProvider({

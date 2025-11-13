@@ -11,7 +11,7 @@ import {
   Box,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import type { ProductWithStoreName } from "@/features/product/types";
+import type { ProductWithStoreName } from "@/core/models/product/model";
 import {
   productPayloadSchema,
   type ProductPayload,
@@ -130,11 +130,11 @@ export function ProductMetaModal({
     const updatedProduct: ProductWithStoreName = {
       ...product,
       name: formState.name.trim(),
-      storeId: formState.storeId as ProductWithStoreName["storeId"],
+      storeId: formState.storeId,
       storeName: formState.storeName,
       category: formState.category.trim(),
       stockQuantity: Number(formState.stockQuantity),
-      price: Number(formState.price) as ProductWithStoreName["price"],
+      price: Number(formState.price),
     };
 
     onUpdate(updatedProduct);

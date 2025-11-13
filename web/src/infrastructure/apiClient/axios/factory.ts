@@ -6,7 +6,7 @@ import axios, {
 
 export const createAxiosApiClient: ApiClientFactory<
   InternalAxiosRequestConfig,
-  AxiosResponse<any, any, any>
+  AxiosResponse<unknown, unknown, unknown>
 > = (baseURL: string, requestInterceptor, responseInterceptor) => {
   const instance = axios.create({
     baseURL,

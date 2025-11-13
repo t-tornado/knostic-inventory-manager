@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/shared/components/PageLayout";
 import { PageError } from "@/shared/components/PageError";
 import StoreIcon from "@mui/icons-material/Store";
-import type { Store, StoreId } from "@/core/models/store/model";
+import type { Store } from "@/core/models/store/model";
 import {
   BusinessTable,
   type BusinessTableHandle,
@@ -14,7 +14,7 @@ import type {
 } from "@/shared/components/BusinessTable";
 import { StoreTableHeaderActions } from "../components";
 import { StoreMetaModal } from "@/shared/components/StoreMetaModal";
-import type { StorePayload } from "../validation";
+import type { StorePayload } from "../utils/validation";
 import { storeService } from "../service";
 import { useCreateStore, useUpdateStore, useDeleteStore } from "../hooks";
 import {
@@ -63,7 +63,8 @@ export const StoreList = () => {
     setModalOpen(true);
   };
 
-  const handleFiltersChange = (filters: any[]) => {
+  const handleFiltersChange = (filters: unknown[]) => {
+    // Filters change handler - can be extended with proper typing if needed
     console.log("Filters changed:", filters);
   };
 
@@ -79,44 +80,38 @@ export const StoreList = () => {
 
   const handleCreateStore = async (data: StorePayload) => {
     try {
-      const result = await createStoreMutation.mutateAsync({
+      await createStoreMutation.mutateAsync({
         name: data.name,
       });
-      tableRef.current?.upsertRow(result.id, result);
       handleCloseModal();
-    } catch (error) {
-      // Error is handled by the mutation
-      console.error("Failed to create store:", error);
+    } catch {
+      // Error is handled by the mutation (toast + rollback)
     }
   };
 
   const handleUpdateStore = async (store: Store) => {
     try {
-      const result = await updateStoreMutation.mutateAsync({
+      await updateStoreMutation.mutateAsync({
         id: store.id,
         data: { name: store.name },
       });
-      tableRef.current?.updateRow(result.id, result);
       handleCloseModal();
     } catch {
+      // Error is handled by the mutation (toast + rollback)
+      // Restore original store in modal if still open
       if (originalStore) {
         setSelectedStore(originalStore);
         setModalOpen(true);
-        tableRef.current?.updateRow(originalStore.id, originalStore);
       }
     }
   };
 
-  const handleDeleteStore = async (storeId: StoreId) => {
-    const storeToDelete = selectedStore;
+  const handleDeleteStore = async (storeId: string) => {
     try {
       await deleteStoreMutation.mutateAsync(storeId);
-      tableRef.current?.deleteRow(storeId);
       handleCloseModal();
     } catch {
-      if (storeToDelete) {
-        tableRef.current?.upsertRow(storeToDelete.id, storeToDelete);
-      }
+      // Error is handled by the mutation (toast + rollback)
     }
   };
 
@@ -140,10 +135,9 @@ export const StoreList = () => {
       <BusinessTable
         ref={tableRef}
         schema={STORES_TABLE_SCHEMA}
-        processingMode='server'
         getData={getStoresData}
         getRowId={(row) => (row?.id as string) || String(Math.random())}
-        onRowClick={handleRowClick}
+        onRowClick={(row: unknown) => handleRowClick(row as Store)}
         onFiltersChange={handleFiltersChange}
         customization={{
           formatFieldLabel: formatStoreFieldLabel,

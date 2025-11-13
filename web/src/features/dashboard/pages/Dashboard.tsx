@@ -3,6 +3,7 @@ import { PageLoader } from "@/shared/components/PageLoader";
 import { PageError } from "@/shared/components/PageError";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import { useDashboard } from "../hooks/useDashboard";
+import { useActivities } from "../hooks/useActivities";
 import {
   StatsGrid,
   ChartsGrid,
@@ -15,6 +16,11 @@ const DASHBOARD_HEADER_ICON = <ShowChartIcon />;
 
 export const DashboardPage = () => {
   const { data, isLoading, error, refetch } = useDashboard();
+  const {
+    data: activitiesData,
+    isLoading: isLoadingActivities,
+    error: activitiesError,
+  } = useActivities();
 
   if (isLoading) {
     return (
@@ -59,7 +65,11 @@ export const DashboardPage = () => {
         inventoryValue={data.inventoryValue}
       />
       <AlertsSection alerts={data.alerts} />
-      <ActivitySection activity={data.activity} />
+      <ActivitySection
+        activity={activitiesData || []}
+        isLoading={isLoadingActivities}
+        error={activitiesError}
+      />
     </PageLayout>
   );
 };

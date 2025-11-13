@@ -54,14 +54,8 @@ export function validateConfig(config: Partial<TableConfig>): {
     }
   }
 
-  if (config.processingMode === "server" && !config.getData) {
-    errors.push(
-      "getData service function is required when processingMode is 'server'"
-    );
-  }
-
-  if (config.processingMode === "client" && !config.data) {
-    errors.push("Data is required when processingMode is 'client'");
+  if (!config.getData) {
+    errors.push("getData service function is required");
   }
 
   return {

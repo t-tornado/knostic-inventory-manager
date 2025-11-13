@@ -19,6 +19,7 @@ import type {
   InventoryValueData,
 } from "../types";
 import { ChartPeriodFilters } from "./ChartPeriodFilters";
+import { StyledChartsGrid } from "./atoms/styled";
 
 interface ChartsGridProps {
   categories: CategoryData[];
@@ -38,17 +39,7 @@ export const ChartsGrid = ({
   const valueChartState = useValueChart();
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "1fr",
-          lg: "repeat(2, 1fr)",
-        },
-        gap: 3,
-        mb: 3,
-      }}
-    >
+    <StyledChartsGrid>
       <Box>
         <ChartCard title='Products by Category' icon={<PieChartIcon />}>
           <CategoryChart categories={categories} />
@@ -87,6 +78,6 @@ export const ChartsGrid = ({
           />
         </ChartCard>
       </Box>
-    </Box>
+    </StyledChartsGrid>
   );
 };

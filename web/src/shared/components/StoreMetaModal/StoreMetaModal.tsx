@@ -9,11 +9,11 @@ import {
   Box,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import type { Store, StoreId } from "@/core/models/store/model";
+import type { Store } from "@/core/models/store/model";
 import {
   storePayloadSchema,
   type StorePayload,
-} from "@/features/store/validation";
+} from "@/features/store/utils/validation";
 import { formatDateTime } from "@/shared/utils/format";
 import { createInitialState } from "./createInitialState";
 import { StoreMetaModalFormState } from "./types";
@@ -27,7 +27,7 @@ interface StoreMetaModalProps {
   onClose: () => void;
   onCreate?: (data: StorePayload) => void;
   onUpdate?: (store: Store) => void;
-  onDelete?: (storeId: StoreId) => void;
+  onDelete?: (storeId: string) => void;
 }
 
 export function StoreMetaModal({

@@ -17,7 +17,7 @@ export type {
   TableDataService,
   TableRequestParams,
   TableResponse,
-  ProcessingMode,
+  TableRowData,
   TableCustomization,
   BusinessTableHandle,
 } from "./types";

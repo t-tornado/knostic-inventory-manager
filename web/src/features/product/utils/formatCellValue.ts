@@ -33,11 +33,10 @@ export const formatProductFieldLabelWithoutStore = (field: string): string => {
 
 export const renderProductCellValue = (
   column: Column,
-  rowData: any
+  rowData: unknown
 ): string => {
   const value = column.accessor(rowData);
 
-  // Format price as currency
   if (column.field === "price") {
     if (value !== null && value !== undefined) {
       return formatCurrency(Number(value), {
@@ -57,11 +56,6 @@ export const renderProductCellValue = (
   return value ?? "-";
 };
 
-/**
- * Creates table customization for product tables
- * @param includeStoreName - Whether to include storeName in field labels (default: true)
- * @returns TableCustomization object
- */
 export const createProductTableCustomization = (
   includeStoreName: boolean = true
 ): TableCustomization => {

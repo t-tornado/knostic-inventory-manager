@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 
-// ============================================================================
-// Schema Types
-// ============================================================================
+export type TableRowData = Record<string, unknown>;
 
 export interface TableSchema {
   [source: string]: {
@@ -20,7 +18,7 @@ export interface ParsedField {
   valueTypes: string[];
   values: (string | number)[];
   types?: string[];
-  fullKey: string; // "source.field"
+  fullKey: string;
 }
 
 export interface ParsedSchema {
@@ -28,10 +26,6 @@ export interface ParsedSchema {
   sources: string[];
   fieldMap: Map<string, ParsedField>;
 }
-
-// ============================================================================
-// Filter Types
-// ============================================================================
 
 export type FilterOperator =
   | "equals"
@@ -51,10 +45,10 @@ export type FilterOperator =
 
 export interface Filter {
   id: string;
-  field: string; // Field key from schema (e.g., "source.field" or just "field")
+  field: string;
   operator: FilterOperator;
   value: string | number | (string | number)[] | null;
-  source?: string; // Optional source if field is scoped to a source
+  source?: string;
 }
 
 export interface FilterGroup {
@@ -63,16 +57,12 @@ export interface FilterGroup {
   operator: "AND" | "OR";
 }
 
-// ============================================================================
-// Column Types
-// ============================================================================
-
 export interface Column {
   id: string;
   field: string;
   source?: string;
   label: string;
-  accessor: (row: any) => any;
+  accessor: (row: TableRowData) => unknown;
   sortable?: boolean;
   filterable?: boolean;
   width?: number;
@@ -87,19 +77,11 @@ export interface ColumnSort {
   direction: "asc" | "desc";
 }
 
-// ============================================================================
-// Pagination Types
-// ============================================================================
-
 export interface PaginationState {
-  pageIndex: number; // 0-based
+  pageIndex: number;
   pageSize: number;
   total?: number;
 }
-
-// ============================================================================
-// Selection Types
-// ============================================================================
 
 export type SelectionMode = "single" | "multiple" | "none";
 
@@ -108,47 +90,29 @@ export interface SelectionState {
   mode: SelectionMode;
 }
 
-// ============================================================================
-// Grouping Types
-// ============================================================================
-
 export interface GroupingState {
   groupBy: string[];
   expanded: Set<string>;
 }
 
-// ============================================================================
-// Table State
-// ============================================================================
-
 export interface TableState {
-  // Filters
   filters: Filter[];
   filterGroups: FilterGroup[];
 
-  // Columns
   columns: Column[];
   columnOrder: string[];
   columnVisibility: Record<string, boolean>;
   columnSorting: ColumnSort[];
 
-  // Search
   searchKeyword: string;
   searchType: "exact" | "fuzzy";
 
-  // Pagination
   pagination: PaginationState;
 
-  // Selection
   selection: SelectionState;
 
-  // Grouping
   grouping: GroupingState;
 }
-
-// ============================================================================
-// Action Types
-// ============================================================================
 
 export type TableAction =
   | { type: "FILTER_ADD"; payload: Filter }
@@ -173,43 +137,29 @@ export type TableAction =
   | { type: "STATE_RESET" }
   | { type: "STATE_RESTORE"; payload: Partial<TableState> };
 
-// ============================================================================
-// Service Types
-// ============================================================================
-
 export interface TableRequestParams {
-  filters?: string; // JSON stringified
+  filters?: string;
   search?: string;
   searchType?: "exact" | "fuzzy";
-  sort?: string; // JSON stringified
-  page?: number; // 1-based
+  sort?: string;
+  page?: number;
   pageSize?: number;
-  groupBy?: string; // JSON stringified
-  columns?: string; // JSON stringified
+  groupBy?: string;
+  columns?: string;
 }
 
 export interface TableResponse {
-  data: any[];
+  data: unknown[];
   meta: {
     total: number;
-    page: number; // 1-based
+    page: number;
     pageSize: number;
   };
 }
 
-/**
- * Service function that receives encoded table state and returns data
- * The table manages the request lifecycle (loading, error, etc.)
- */
 export type TableDataService = (
   params: TableRequestParams
 ) => Promise<TableResponse>;
-
-export type ProcessingMode = "server" | "client";
-
-// ============================================================================
-// Configuration Types
-// ============================================================================
 
 export interface TableFeatures {
   enableFiltering?: boolean;
@@ -229,19 +179,19 @@ export interface TableCustomization {
   formatFieldLabel?: (field: string, source?: string) => string;
   renderCellValue?: (
     column: Column,
-    rowData: any,
-    setRowData?: (data: any) => void
+    rowData: TableRowData,
+    setRowData?: (data: TableRowData) => void
   ) => ReactNode;
   renderColumnHeader?: (column: Column) => ReactNode;
-  renderRowActions?: (rowData: any) => ReactNode;
-  renderBulkActions?: (selectedRows: any[]) => ReactNode;
-  formatFilterValue?: (field: string, value: any) => string;
+  renderRowActions?: (rowData: TableRowData) => ReactNode;
+  renderBulkActions?: (selectedRows: TableRowData[]) => ReactNode;
+  formatFilterValue?: (field: string, value: unknown) => string;
   validateFilter?: (filter: Filter) => boolean | string;
 }
 
 export interface TableSlots {
-  RowActions?: React.ComponentType<{ rowData: any }>;
-  BulkActions?: React.ComponentType<{ selectedRows: any[] }>;
+  RowActions?: React.ComponentType<{ rowData: TableRowData }>;
+  BulkActions?: React.ComponentType<{ selectedRows: TableRowData[] }>;
   FilterPanel?: React.ComponentType;
   ColumnPanel?: React.ComponentType;
   GroupingPanel?: React.ComponentType;
@@ -252,38 +202,27 @@ export interface TableSlots {
 
 export interface TableConfig {
   schema: TableSchema;
-  getData?: TableDataService; // Service function for server mode
-  processingMode: ProcessingMode;
-  data?: any[]; // for client mode - will be processed locally
+  getData: TableDataService;
   features?: TableFeatures;
   customization?: TableCustomization;
   slots?: TableSlots;
   initialState?: Partial<TableState>;
   queryKeyPrefix?: string;
-  persistKey?: string; // localStorage key
+  persistKey?: string;
 }
-
-// ============================================================================
-// Component Props
-// ============================================================================
 
 export interface BusinessTableProps extends TableConfig {
   className?: string;
   style?: React.CSSProperties;
-  onRowClick?: (row: any) => void;
-  onRowSelect?: (rows: any[]) => void;
+  onRowClick?: (row: unknown) => void;
+  onRowSelect?: (rows: TableRowData[]) => void;
   onStateChange?: (state: TableState) => void;
   onFiltersChange?: (filters: Filter[]) => void;
-  /**
-   * Function to get a unique ID for each row.
-   * If not provided, MRT will use the row index.
-   * This is useful for maintaining row identity when data updates.
-   */
-  getRowId?: (row: any) => string | number;
+  getRowId?: (row: TableRowData) => string | number;
 }
 
 export interface BusinessTableHandle {
-  updateRow: (rowId: string | number, updatedRow: any) => void;
-  upsertRow: (rowId: string | number | undefined, row: any) => void;
+  updateRow: (rowId: string | number, updatedRow: TableRowData) => void;
+  upsertRow: (rowId: string | number | undefined, row: TableRowData) => void;
   deleteRow: (rowId: string | number) => void;
 }

@@ -1,3 +1,4 @@
+import { MRT_RowData } from "material-react-table";
 import type { ParsedSchema, Column, TableCustomization } from "../../types";
 
 export function createColumnsFromSchema(
@@ -10,7 +11,6 @@ export function createColumnsFromSchema(
       field.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()));
 
   return schema.fields.map((field, index) => {
-    // Determine default width based on field type
     const getDefaultWidth = (fieldName: string, valueTypes: string[]) => {
       if (fieldName === "id") return 80;
       if (valueTypes.includes("date")) return 150;
@@ -25,13 +25,11 @@ export function createColumnsFromSchema(
       label: formatLabel(field.field, field.source),
       width: getDefaultWidth(field.field, field.valueTypes),
       minWidth: 80,
-      accessor: (row: any) => {
-        // First try direct field access (for flat data structures)
+      accessor: (row: MRT_RowData) => {
         if (row?.[field.field] !== undefined) {
           return row[field.field];
         }
 
-        // Then try nested accessors like "source.field" (for nested data)
         const keys = field.fullKey.split(".");
         let value = row;
         for (const key of keys) {

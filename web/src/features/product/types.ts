@@ -1,8 +1,8 @@
-import type { Product } from "@/core/models/product/model";
-
-export interface ProductWithStoreName extends Product {
-  storeName?: string;
-}
+import type {
+  Product,
+  ProductWithStoreName,
+} from "@/core/models/product/model";
+import { TableResponse } from "@/shared/components/BusinessTable";
 
 export interface ProductQueryParams {
   search?: string;
@@ -28,3 +28,19 @@ export interface IProductService {
   updateProduct(id: string, data: Partial<RawProductType>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
 }
+
+export type ProductQueryUpdater =
+  | ProductQueryResult
+  | TableResponse
+  | undefined;
+
+export type ProductQueryUpdaterFn = (
+  input: ProductQueryUpdater
+) => ProductQueryUpdater;
+
+export type QueryClientStorageKey = string;
+export type QueryClientStorageValue = ProductQueryUpdater;
+export type ProductQueryUpdaterMap = Map<
+  QueryClientStorageKey,
+  QueryClientStorageValue
+>;

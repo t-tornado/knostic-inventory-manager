@@ -11,8 +11,8 @@ export interface TableContextValue {
   dispatch: React.Dispatch<TableAction>;
   schema: ParsedSchema;
   config: Required<TableConfig>;
-  getRowId?: (row: any) => string | number;
-  onRowClick?: (row: any) => void;
+  getRowId?: (row: unknown) => string | number;
+  onRowClick?: (row: unknown) => void;
 }
 
 export const TableContext = createContext<TableContextValue | null>(null);

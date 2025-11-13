@@ -68,4 +68,5 @@ export interface DashboardDataOptions {
 
 export interface IDashboardService {
   getDashboard(): Promise<DashboardData>;
+  getActivities(): Promise<ActivityItem[]>;
 }

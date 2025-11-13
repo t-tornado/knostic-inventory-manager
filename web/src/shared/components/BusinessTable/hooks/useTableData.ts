@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { useTableState } from "./useTableState";
 import { encodeTableStateToParams } from "../utils/state/encoder";
-import { processClientData } from "../utils/clientDataProcessor";
+import { MRT_RowData } from "material-react-table";
 
 export function useTableData() {
   const { state, dispatch, config, getRowId } = useTableState();
@@ -20,43 +20,32 @@ export function useTableData() {
   const query = useQuery({
     queryKey,
     queryFn: async () => {
-      if (config.processingMode === "server") {
-        if (!config.getData) {
-          throw new Error(
-            "getData service function is required for server mode"
-          );
-        }
-
-        const result = await config.getData(requestParams);
-
-        if (result.meta?.total !== undefined) {
-          dispatch({
-            type: "PAGINATION_SET",
-            payload: { total: result.meta.total },
-          });
-        }
-
-        return result;
-      } else {
-        if (!config.data) {
-          throw new Error("Data is required for client mode");
-        }
-        return processClientData(state, config.data);
+      if (!config.getData) {
+        throw new Error("getData service function is required");
       }
+
+      const result = await config.getData(requestParams);
+
+      if (result.meta?.total !== undefined) {
+        dispatch({
+          type: "PAGINATION_SET",
+          payload: { total: result.meta.total },
+        });
+      }
+
+      return result;
     },
-    enabled:
-      (config.processingMode === "server" && !!config.getData) ||
-      (config.processingMode === "client" && !!config.data),
-    staleTime: 30000, // 30 seconds
+    enabled: !!config.getData,
+    staleTime: 30000,
   });
 
   const resolveRowId = useCallback(
-    (row: any) => {
+    (row: MRT_RowData) => {
       if (getRowId) {
         try {
           return getRowId(row);
         } catch {
-          // fall through to default ids
+          return undefined;
         }
       }
       return (
@@ -67,12 +56,12 @@ export function useTableData() {
   );
 
   const updateRowById = useCallback(
-    (rowId: string | number, updatedRow: any) => {
+    (rowId: string | number, updatedRow: MRT_RowData) => {
       if (rowId === undefined || rowId === null) return;
-      queryClient.setQueryData(queryKey, (old: any) => {
+      queryClient.setQueryData(queryKey, (old: MRT_RowData) => {
         if (!old) return old;
         let updated = false;
-        const nextData = old.data.map((row: any) => {
+        const nextData = old.data.map((row: MRT_RowData) => {
           if (resolveRowId(row) === rowId) {
             updated = true;
             return { ...updatedRow };
@@ -92,15 +81,15 @@ export function useTableData() {
   );
 
   const upsertRowById = useCallback(
-    (rowId: string | number | undefined, newRow: any) => {
+    (rowId: string | number | undefined, newRow: MRT_RowData) => {
       const resolvedId = rowId ?? resolveRowId(newRow);
       if (resolvedId === undefined || resolvedId === null) return;
 
-      queryClient.setQueryData(queryKey, (old: any) => {
+      queryClient.setQueryData(queryKey, (old: MRT_RowData) => {
         if (!old) return old;
 
         let found = false;
-        const nextData = old.data.map((row: any) => {
+        const nextData = old.data.map((row: MRT_RowData) => {
           if (resolveRowId(row) === resolvedId) {
             found = true;
             return { ...newRow };
@@ -137,10 +126,10 @@ export function useTableData() {
   const deleteRowById = useCallback(
     (rowId: string | number) => {
       if (rowId === undefined || rowId === null) return;
-      queryClient.setQueryData(queryKey, (old: any) => {
+      queryClient.setQueryData(queryKey, (old: MRT_RowData) => {
         if (!old) return old;
         const nextData = old.data.filter(
-          (row: any) => resolveRowId(row) !== rowId
+          (row: MRT_RowData) => resolveRowId(row) !== rowId
         );
         if (nextData.length === old.data.length) {
           return old;

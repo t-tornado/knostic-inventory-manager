@@ -1,15 +1,18 @@
-import type { StoreId } from "../store/model";
-import type { ISODateTime, Price } from "../ValueObjects";
+import type { ISODateTime } from "../ValueObjects";
 
 export type ProductId = string & { readonly brand: unique symbol };
 
 export interface Product {
   id: ProductId;
-  storeId: StoreId;
+  storeId: string;
   name: string;
   category: string;
   stockQuantity: number;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
-  price: Price;
+  price: number;
+}
+
+export interface ProductWithStoreName extends Product {
+  storeName?: string;
 }
