@@ -20,12 +20,12 @@ import {
 
 interface EditProductModalProps {
   open: boolean;
-  product: ProductWithStoreName;
+  product: ProductWithStoreName | null;
   storeOptions: Array<{ id: string; name: string }>;
   categoryOptions: string[];
   onClose: () => void;
   onSave: (product: ProductWithStoreName) => void;
-  onDelete: (productId: string) => void;
+  onDelete?: (productId: string) => void;
 }
 
 interface FormState {
@@ -38,9 +38,20 @@ interface FormState {
 }
 
 const createInitialState = (
-  product: ProductWithStoreName,
+  product: ProductWithStoreName | null,
   storeOptions: Array<{ id: string; name: string }>
 ): FormState => {
+  if (!product) {
+    return {
+      name: "",
+      storeId: storeOptions[0]?.id ?? "",
+      storeName: storeOptions[0]?.name ?? "",
+      category: "",
+      stockQuantity: "",
+      price: "",
+    };
+  }
+
   const foundStore =
     storeOptions.find((option) => option.id === product.storeId) ||
     storeOptions.find((option) => option.name === product.storeName);
@@ -69,17 +80,19 @@ export function EditProductModal({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const isEditing = useMemo(() => Boolean(product), [product]);
+
   useEffect(() => {
     setFormState(createInitialState(product, storeOptions));
     setErrors({});
   }, [product, storeOptions]);
 
   const categories = useMemo(() => {
-    if (!product.category || categoryOptions.includes(product.category)) {
+    if (!product?.category || categoryOptions.includes(product.category)) {
       return categoryOptions;
     }
     return [...categoryOptions, product.category];
-  }, [categoryOptions, product.category]);
+  }, [categoryOptions, product?.category]);
 
   const handleChange =
     (field: keyof FormState) =>
@@ -140,20 +153,39 @@ export function EditProductModal({
       price: Number(formState.price),
     };
 
-    const updatedProduct: ProductWithStoreName = {
-      ...product,
-      name: payload.name,
-      storeId: payload.storeId as ProductWithStoreName["storeId"],
-      storeName: formState.storeName,
-      category: payload.category,
-      stockQuantity: payload.stockQuantity,
-      price: payload.price as Price,
-    };
-
-    onSave(updatedProduct);
+    if (product) {
+      // Editing existing product
+      const updatedProduct: ProductWithStoreName = {
+        ...product,
+        name: payload.name,
+        storeId: payload.storeId as ProductWithStoreName["storeId"],
+        storeName: formState.storeName,
+        category: payload.category,
+        stockQuantity: payload.stockQuantity,
+        price: payload.price as Price,
+      };
+      onSave(updatedProduct);
+    } else {
+      // Creating new product - onSave will handle the creation
+      const newProduct: ProductWithStoreName = {
+        id: `temp-${Date.now()}` as ProductWithStoreName["id"],
+        name: payload.name,
+        storeId: payload.storeId as ProductWithStoreName["storeId"],
+        storeName: formState.storeName,
+        category: payload.category,
+        stockQuantity: payload.stockQuantity,
+        price: payload.price as Price,
+        createdAt:
+          new Date().toISOString() as ProductWithStoreName["createdAt"],
+        updatedAt:
+          new Date().toISOString() as ProductWithStoreName["updatedAt"],
+      };
+      onSave(newProduct);
+    }
   };
 
   const handleDelete = () => {
+    if (!product || !onDelete) return;
     onDelete(product.id);
   };
 
@@ -165,7 +197,9 @@ export function EditProductModal({
       fullWidth
       aria-labelledby='edit-product-dialog-title'
     >
-      <DialogTitle id='edit-product-dialog-title'>Edit Product</DialogTitle>
+      <DialogTitle id='edit-product-dialog-title'>
+        {isEditing ? "Edit Product" : "Create Product"}
+      </DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
           <TextField
@@ -182,8 +216,14 @@ export function EditProductModal({
             value={formState.storeId}
             onChange={handleStoreChange}
             error={Boolean(errors.storeId)}
-            helperText={errors.storeId}
+            helperText={
+              errors.storeId ||
+              (storeOptions.length === 0
+                ? "No stores available. Please create a store first."
+                : "")
+            }
             fullWidth
+            disabled={storeOptions.length === 0}
           >
             {storeOptions.map((store) => (
               <MenuItem key={store.id} value={store.id}>
@@ -228,13 +268,15 @@ export function EditProductModal({
               inputProps={{ min: 0, step: 0.01 }}
             />
           </Stack>
-          <Typography variant='body2' color='text.secondary'>
-            Last updated:{" "}
-            {new Date(product.updatedAt).toLocaleString(undefined, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}
-          </Typography>
+          {product && (
+            <Typography variant='body2' color='text.secondary'>
+              Last updated:{" "}
+              {new Date(product.updatedAt).toLocaleString(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </Typography>
+          )}
         </Stack>
       </DialogContent>
       <Box
@@ -246,13 +288,16 @@ export function EditProductModal({
           py: 2,
         }}
       >
-        <Button color='error' variant='outlined' onClick={handleDelete}>
-          Delete Product
-        </Button>
+        {isEditing && onDelete && (
+          <Button color='error' variant='outlined' onClick={handleDelete}>
+            Delete Product
+          </Button>
+        )}
+        {!isEditing && <Box />}
         <DialogActions sx={{ p: 0 }}>
           <Button onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave} variant='contained'>
-            Save Changes
+            {isEditing ? "Save Changes" : "Create Product"}
           </Button>
         </DialogActions>
       </Box>

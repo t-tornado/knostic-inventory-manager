@@ -126,8 +126,11 @@ export const StoreDetails = () => {
   } = useStoreDetails(storeId, { enabled: !!storeId });
 
   const [isStoreModalOpen, setStoreModalOpen] = useState(false);
+  const [originalStore, setOriginalStore] = useState<Store | null>(null);
   const tableRef = useRef<BusinessTableHandle | null>(null);
   const [selectedProduct, setSelectedProduct] =
+    useState<ProductWithStoreName | null>(null);
+  const [originalProduct, setOriginalProduct] =
     useState<ProductWithStoreName | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
@@ -141,6 +144,9 @@ export const StoreDetails = () => {
     : "";
 
   const handleEditStore = () => {
+    if (storeInfo) {
+      setOriginalStore({ ...storeInfo });
+    }
     setStoreModalOpen(true);
   };
 
@@ -150,6 +156,7 @@ export const StoreDetails = () => {
 
   const handleRowClick = (row: ProductWithStoreName) => {
     setSelectedProduct(row);
+    setOriginalProduct({ ...row });
     setDetailOpen(true);
   };
 
@@ -160,6 +167,7 @@ export const StoreDetails = () => {
   const handleCloseDetail = () => {
     setDetailOpen(false);
     setSelectedProduct(null);
+    setOriginalProduct(null);
   };
 
   const updateProductMutation = useUpdateProduct();
@@ -181,18 +189,25 @@ export const StoreDetails = () => {
       });
       tableRef.current?.updateRow(updatedProduct.id, updatedProduct);
       handleCloseDetail();
-    } catch (error) {
-      console.error("Failed to update product:", error);
+    } catch {
+      if (originalProduct) {
+        setSelectedProduct(originalProduct);
+        setDetailOpen(true);
+        tableRef.current?.updateRow(originalProduct.id, originalProduct);
+      }
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    const productToDelete = selectedProduct;
     try {
       await deleteProductMutation.mutateAsync(productId);
       tableRef.current?.deleteRow(productId);
       handleCloseDetail();
-    } catch (error) {
-      console.error("Failed to delete product:", error);
+    } catch {
+      if (productToDelete) {
+        tableRef.current?.upsertRow(productToDelete.id, productToDelete);
+      }
     }
   };
 
@@ -204,8 +219,11 @@ export const StoreDetails = () => {
       });
       await refetchStoreDetails();
       setStoreModalOpen(false);
-    } catch (error) {
-      console.error("Failed to update store:", error);
+      setOriginalStore(null);
+    } catch {
+      if (originalStore) {
+        setStoreModalOpen(true);
+      }
     }
   };
 
@@ -214,8 +232,8 @@ export const StoreDetails = () => {
       await deleteStoreMutation.mutateAsync(storeId);
       setStoreModalOpen(false);
       navigate("/stores");
-    } catch (error) {
-      console.error("Failed to delete store:", error);
+    } catch {
+      setStoreModalOpen(false);
     }
   };
 

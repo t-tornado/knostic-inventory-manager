@@ -1,6 +1,6 @@
 import { ISODateTime } from "./ValueObject";
 
-export type StoreId = string & { readonly brand: unique symbol };
+export type StoreId = number & { readonly brand: unique symbol };
 
 export interface Store {
   id: StoreId;
@@ -9,4 +9,4 @@ export interface Store {
   updatedAt: ISODateTime;
 }
 
-export const createStoreId = (id: string): StoreId => id as StoreId;
+export const createStoreId = (id: number): StoreId => id as StoreId;

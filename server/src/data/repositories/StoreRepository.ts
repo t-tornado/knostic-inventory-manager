@@ -9,7 +9,7 @@ import type { IDatabase } from "../../infrastructure/database";
 import { buildQuery } from "./queryBuilder";
 
 interface StoreRow {
-  id: string;
+  id: number;
   name: string;
   created_at: string;
   updated_at: string;
@@ -82,14 +82,18 @@ export class StoreRepository implements IStoreRepository {
     return this.rowToEntity(rows[0]!);
   }
 
-  async create(store: Omit<Store, "createdAt" | "updatedAt">): Promise<Store> {
+  async create(
+    store: Omit<Store, "id" | "createdAt" | "updatedAt">
+  ): Promise<Store> {
     const now = new Date().toISOString() as ISODateTime;
-    await this.db.execute(
-      "INSERT INTO stores (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)",
-      [store.id, store.name, now, now]
+    const result = await this.db.execute(
+      "INSERT INTO stores (name, created_at, updated_at) VALUES (?, ?, ?)",
+      [store.name, now, now]
     );
+    const id = result.lastID as number;
     return {
-      ...store,
+      id: id as StoreId,
+      name: store.name,
       createdAt: now,
       updatedAt: now,
     };

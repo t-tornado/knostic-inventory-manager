@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/shared/components/PageLayout";
 import { PageError } from "@/shared/components/PageError";
 import StoreIcon from "@mui/icons-material/Store";
+import type { Store, StoreId } from "@/core/models/store/model";
 import {
   BusinessTable,
   type BusinessTableHandle,
@@ -15,11 +16,10 @@ import type {
   Column,
 } from "@/shared/components/BusinessTable";
 import { StoreTableHeaderActions } from "../components";
-import type { Store, StoreId } from "@/core/models/store/model";
 import { EditStoreModal } from "@/shared/components/EditStoreModal";
 import { StoreId as StoreIdComponent } from "../components/atoms";
 import { storeService } from "../service";
-import { useUpdateStore, useDeleteStore } from "../hooks";
+import { useCreateStore, useUpdateStore, useDeleteStore } from "../hooks";
 
 // Define the table schema for stores
 const storesSchema: TableSchema = {
@@ -47,6 +47,7 @@ export const StoreList = () => {
   const tableRef = useRef<BusinessTableHandle | null>(null);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [originalStore, setOriginalStore] = useState<Store | null>(null);
   const navigate = useNavigate();
 
   /**
@@ -96,6 +97,7 @@ export const StoreList = () => {
 
   const handleRowClick = (row: Store) => {
     setSelectedStore(row);
+    setOriginalStore({ ...row });
     setModalOpen(true);
   };
 
@@ -107,36 +109,50 @@ export const StoreList = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedStore(null);
+    setOriginalStore(null);
   };
 
+  const createStoreMutation = useCreateStore();
   const updateStoreMutation = useUpdateStore();
   const deleteStoreMutation = useDeleteStore();
 
   const handleSaveStore = async (store: Store) => {
     try {
       if (selectedStore) {
-        await updateStoreMutation.mutateAsync({
+        // Editing existing store
+        const result = await updateStoreMutation.mutateAsync({
           id: store.id,
           data: { name: store.name },
         });
-        tableRef.current?.updateRow(store.id, store);
+        tableRef.current?.updateRow(result.id, result);
+        handleCloseModal();
       } else {
-        // TODO: Implement create store mutation
-        tableRef.current?.upsertRow(store.id, store);
+        // Creating new store - only send name, server returns full store
+        const result = await createStoreMutation.mutateAsync({
+          name: store.name,
+        });
+        tableRef.current?.upsertRow(result.id, result);
+        handleCloseModal();
       }
-      handleCloseModal();
     } catch (error) {
-      console.error("Failed to save store:", error);
+      if (selectedStore && originalStore) {
+        setSelectedStore(originalStore);
+        setModalOpen(true);
+        tableRef.current?.updateRow(originalStore.id, originalStore);
+      }
     }
   };
 
   const handleDeleteStore = async (storeId: StoreId) => {
+    const storeToDelete = selectedStore;
     try {
       await deleteStoreMutation.mutateAsync(storeId);
       tableRef.current?.deleteRow(storeId);
       handleCloseModal();
     } catch (error) {
-      console.error("Failed to delete store:", error);
+      if (storeToDelete) {
+        tableRef.current?.upsertRow(storeToDelete.id, storeToDelete);
+      }
     }
   };
 

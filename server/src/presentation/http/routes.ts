@@ -6,6 +6,7 @@ import type { DashboardController } from "./controllers/DashboardController";
 import { successResponse } from "./types";
 import { apiPath } from "../../shared/config/apiVersion";
 import { validateTableQueryMiddleware } from "./middleware/validateTableQuery";
+import { validateCreateStoreMiddleware } from "./middleware/validateCreateStore";
 
 export function setupRoutes(
   server: IHttpServer,
@@ -53,8 +54,10 @@ export function setupRoutes(
   server.get(apiPath("/stores/:id/details"), (req: Request, res: Response) =>
     storeController.getStoreDetails(req, res)
   );
-  server.post(apiPath("/stores"), (req: Request, res: Response) =>
-    storeController.createStore(req, res)
+  server.post(
+    apiPath("/stores"),
+    validateCreateStoreMiddleware(apiPath("/stores")),
+    (req: Request, res: Response) => storeController.createStore(req, res)
   );
   server.put(apiPath("/stores/:id"), (req: Request, res: Response) =>
     storeController.updateStore(req, res)

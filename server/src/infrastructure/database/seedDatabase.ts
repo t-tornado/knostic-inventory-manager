@@ -16,14 +16,16 @@ export async function seedDatabase(
 
   console.log("Seeding database...");
 
-  // Seed stores
+  // Seed stores and collect created stores with IDs
+  const createdStores = [];
   for (const store of seedStores) {
-    await storeRepository.create(store);
+    const createdStore = await storeRepository.create(store);
+    createdStores.push(createdStore);
   }
-  console.log(`Seeded ${seedStores.length} stores`);
+  console.log(`Seeded ${createdStores.length} stores`);
 
-  // Generate and seed products
-  const products = generateSeedProducts(seedStores);
+  // Generate and seed products using created stores with IDs
+  const products = generateSeedProducts(createdStores);
   for (const product of products) {
     await productRepository.create(product);
   }

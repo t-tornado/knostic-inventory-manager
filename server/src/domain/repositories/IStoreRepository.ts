@@ -18,7 +18,7 @@ export interface StoreQueryResult {
 export interface IStoreRepository {
   findAll(params?: StoreQueryParams): Promise<StoreQueryResult>;
   findById(id: StoreId): Promise<Store | null>;
-  create(store: Omit<Store, "createdAt" | "updatedAt">): Promise<Store>;
+  create(store: Omit<Store, "id" | "createdAt" | "updatedAt">): Promise<Store>;
   update(
     id: StoreId,
     store: Partial<Omit<Store, "id" | "createdAt">>

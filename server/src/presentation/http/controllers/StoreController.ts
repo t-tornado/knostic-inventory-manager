@@ -148,27 +148,14 @@ export class StoreController {
 
   async createStore(req: Request, res: Response): Promise<void> {
     const path = apiPath("/stores");
-    const { name } = req.body as { name?: string };
-
-    const errors = [];
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      errors.push(
-        createValidationError(
-          "name",
-          "MISSING_REQUIRED",
-          "Store name is required and cannot be empty"
-        )
-      );
-    }
-
-    if (errors.length > 0) {
-      const response = errorResponse(errors, path, "POST");
-      res.status(400).json(response);
-      return;
-    }
+    const validatedBody = (req as any).validatedCreateStoreBody as {
+      name: string;
+    };
 
     try {
-      const store = await this.storeService.createStore({ name: name! });
+      const store = await this.storeService.createStore({
+        name: validatedBody.name,
+      });
       const response = successResponse(store, path, "POST");
       res.status(201).json(response);
     } catch (error) {
