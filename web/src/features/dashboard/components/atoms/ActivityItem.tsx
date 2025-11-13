@@ -39,7 +39,7 @@ export const ActivityItem = ({ type, text, time }: ActivityItemProps) => {
   return (
     <StyledActivityItemContainer>
       <StyledActivityItemIcon bgcolor={colors.bg} color={colors.color}>
-        <Icon fontSize='small' />
+        <Icon sx={{ color: "primary.contrastText" }} />
       </StyledActivityItemIcon>
       <StyledActivityItemContent>
         <StyledActivityItemText variant='body2'>{text}</StyledActivityItemText>

@@ -4,10 +4,6 @@ interface PageLoaderProps {
   message?: string;
 }
 
-/**
- * Production-grade page loader component
- * Displays a centered loading spinner with optional message
- */
 export const PageLoader = ({ message = "Loading..." }: PageLoaderProps) => {
   return (
     <Box
