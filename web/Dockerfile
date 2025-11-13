@@ -6,6 +6,7 @@ WORKDIR /app
 # Build argument for API URL
 ARG VITE_API_URL=http://localhost:3000/api/v1
 ENV VITE_API_URL=$VITE_API_URL
+ENV CYPRESS_INSTALL_BINARY=0
 
 # Copy package files
 COPY package*.json ./
