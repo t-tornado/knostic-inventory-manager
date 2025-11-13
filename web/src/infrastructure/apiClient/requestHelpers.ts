@@ -1,4 +1,4 @@
-import type { BaseApiClient } from "./base";
+import type { IApiClient } from "./types";
 import type { ApiResponse } from "@/shared/api";
 
 function handleApiResponse<T>(
@@ -23,13 +23,13 @@ export function buildUrl(path: string, queryParams?: URLSearchParams): string {
 }
 
 export async function getRequest<T>(
-  apiClient: BaseApiClient,
+  apiClient: IApiClient,
   url: string,
   defaultErrorMessage: string
 ): Promise<T> {
   try {
     const response = await apiClient.get<ApiResponse<T>>(url);
-    return handleApiResponse(response, defaultErrorMessage);
+    return handleApiResponse(response.data, defaultErrorMessage);
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -39,14 +39,14 @@ export async function getRequest<T>(
 }
 
 export async function postRequest<T>(
-  apiClient: BaseApiClient,
+  apiClient: IApiClient,
   url: string,
   data: unknown,
   defaultErrorMessage: string
 ): Promise<T> {
   try {
     const response = await apiClient.post<ApiResponse<T>>(url, data);
-    return handleApiResponse(response, defaultErrorMessage);
+    return handleApiResponse(response.data, defaultErrorMessage);
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -56,14 +56,14 @@ export async function postRequest<T>(
 }
 
 export async function putRequest<T>(
-  apiClient: BaseApiClient,
+  apiClient: IApiClient,
   url: string,
   data: unknown,
   defaultErrorMessage: string
 ): Promise<T> {
   try {
     const response = await apiClient.put<ApiResponse<T>>(url, data);
-    return handleApiResponse(response, defaultErrorMessage);
+    return handleApiResponse(response.data, defaultErrorMessage);
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -73,13 +73,13 @@ export async function putRequest<T>(
 }
 
 export async function deleteRequest(
-  apiClient: BaseApiClient,
+  apiClient: IApiClient,
   url: string,
   defaultErrorMessage: string
 ): Promise<void> {
   try {
     const response = await apiClient.delete<ApiResponse<void>>(url);
-    handleApiResponse(response, defaultErrorMessage);
+    handleApiResponse(response.data, defaultErrorMessage);
   } catch (error) {
     if (error instanceof Error) {
       throw error;

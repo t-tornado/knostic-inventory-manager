@@ -5,7 +5,7 @@ import {
   putRequest,
   deleteRequest,
 } from "@/infrastructure/apiClient/requestHelpers";
-import type { BaseApiClient } from "@/infrastructure/apiClient/base";
+import type { IApiClient } from "@/infrastructure/apiClient";
 import type { ApiResponse } from "@/shared/api";
 
 describe("requestHelpers", () => {
@@ -38,11 +38,14 @@ describe("requestHelpers", () => {
     it("should return data when response is successful", async () => {
       const mockData = { id: 1, name: "Test" };
       const getStub = cy.stub().resolves({
-        data: mockData,
-      } as ApiResponse<typeof mockData>);
-      const mockClient: BaseApiClient = {
+        data: { data: mockData } as ApiResponse<typeof mockData>,
+      });
+      const mockClient = {
         get: getStub,
-      } as unknown as BaseApiClient;
+        post: cy.stub(),
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       const result = await getRequest(
         mockClient,
@@ -56,18 +59,23 @@ describe("requestHelpers", () => {
 
     it("should throw error when response has errors", async () => {
       const getStub = cy.stub().resolves({
-        errors: [
-          {
-            type: "ValidationError",
-            field: "name",
-            code: "REQUIRED",
-            message: "Name is required",
-          },
-        ],
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          errors: [
+            {
+              type: "ValidationError",
+              field: "name",
+              code: "REQUIRED",
+              message: "Name is required",
+            },
+          ],
+        } as ApiResponse,
+      });
+      const mockClient = {
         get: getStub,
-      } as unknown as BaseApiClient;
+        post: cy.stub(),
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       try {
         await getRequest(mockClient, "/test", "Default error message");
@@ -79,11 +87,16 @@ describe("requestHelpers", () => {
 
     it("should throw default error message when no data and no errors", async () => {
       const getStub = cy.stub().resolves({
-        data: undefined,
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          data: undefined,
+        } as ApiResponse,
+      });
+      const mockClient = {
         get: getStub,
-      } as unknown as BaseApiClient;
+        post: cy.stub(),
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       try {
         await getRequest(mockClient, "/test", "Default error message");
@@ -95,24 +108,29 @@ describe("requestHelpers", () => {
 
     it("should handle multiple errors", async () => {
       const getStub = cy.stub().resolves({
-        errors: [
-          {
-            type: "ValidationError",
-            field: "name",
-            code: "REQUIRED",
-            message: "Name is required",
-          },
-          {
-            type: "ValidationError",
-            field: "email",
-            code: "INVALID",
-            message: "Email is invalid",
-          },
-        ],
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          errors: [
+            {
+              type: "ValidationError",
+              field: "name",
+              code: "REQUIRED",
+              message: "Name is required",
+            },
+            {
+              type: "ValidationError",
+              field: "email",
+              code: "INVALID",
+              message: "Email is invalid",
+            },
+          ],
+        } as ApiResponse,
+      });
+      const mockClient = {
         get: getStub,
-      } as unknown as BaseApiClient;
+        post: cy.stub(),
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       try {
         await getRequest(mockClient, "/test", "Default error message");
@@ -130,11 +148,14 @@ describe("requestHelpers", () => {
       const requestData = { name: "New Item" };
       const responseData = { id: 1, ...requestData };
       const postStub = cy.stub().resolves({
-        data: responseData,
-      } as ApiResponse<typeof responseData>);
-      const mockClient: BaseApiClient = {
+        data: { data: responseData } as ApiResponse<typeof responseData>,
+      });
+      const mockClient = {
+        get: cy.stub(),
         post: postStub,
-      } as unknown as BaseApiClient;
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       const result = await postRequest(
         mockClient,
@@ -149,18 +170,23 @@ describe("requestHelpers", () => {
 
     it("should throw error when response has errors", async () => {
       const postStub = cy.stub().resolves({
-        errors: [
-          {
-            type: "ValidationError",
-            field: "name",
-            code: "REQUIRED",
-            message: "Name is required",
-          },
-        ],
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          errors: [
+            {
+              type: "ValidationError",
+              field: "name",
+              code: "REQUIRED",
+              message: "Name is required",
+            },
+          ],
+        } as ApiResponse,
+      });
+      const mockClient = {
+        get: cy.stub(),
         post: postStub,
-      } as unknown as BaseApiClient;
+        put: cy.stub(),
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       try {
         await postRequest(
@@ -181,11 +207,14 @@ describe("requestHelpers", () => {
       const requestData = { name: "Updated Item" };
       const responseData = { id: 1, ...requestData };
       const putStub = cy.stub().resolves({
-        data: responseData,
-      } as ApiResponse<typeof responseData>);
-      const mockClient: BaseApiClient = {
+        data: { data: responseData } as ApiResponse<typeof responseData>,
+      });
+      const mockClient = {
+        get: cy.stub(),
+        post: cy.stub(),
         put: putStub,
-      } as unknown as BaseApiClient;
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       const result = await putRequest(
         mockClient,
@@ -200,18 +229,23 @@ describe("requestHelpers", () => {
 
     it("should throw error when response has errors", async () => {
       const putStub = cy.stub().resolves({
-        errors: [
-          {
-            type: "NotFoundError",
-            field: "id",
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          },
-        ],
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          errors: [
+            {
+              type: "NotFoundError",
+              field: "id",
+              code: "NOT_FOUND",
+              message: "Resource not found",
+            },
+          ],
+        } as ApiResponse,
+      });
+      const mockClient = {
+        get: cy.stub(),
+        post: cy.stub(),
         put: putStub,
-      } as unknown as BaseApiClient;
+        delete: cy.stub(),
+      } as unknown as IApiClient;
 
       try {
         await putRequest(
@@ -230,18 +264,23 @@ describe("requestHelpers", () => {
   describe("deleteRequest", () => {
     it("should throw error when response has errors", async () => {
       const deleteStub = cy.stub().resolves({
-        errors: [
-          {
-            type: "NotFoundError",
-            field: "id",
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          },
-        ],
-      } as ApiResponse);
-      const mockClient: BaseApiClient = {
+        data: {
+          errors: [
+            {
+              type: "NotFoundError",
+              field: "id",
+              code: "NOT_FOUND",
+              message: "Resource not found",
+            },
+          ],
+        } as ApiResponse,
+      });
+      const mockClient = {
+        get: cy.stub(),
+        post: cy.stub(),
+        put: cy.stub(),
         delete: deleteStub,
-      } as unknown as BaseApiClient;
+      } as unknown as IApiClient;
 
       try {
         await deleteRequest(mockClient, "/test/999", "Default error message");

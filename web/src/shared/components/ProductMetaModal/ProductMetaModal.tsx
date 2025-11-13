@@ -86,7 +86,7 @@ export function ProductMetaModal({
   const validate = (): boolean => {
     const payload: ProductPayload = {
       name: formState.name.trim(),
-      storeId: formState.storeId,
+      storeId: String(formState.storeId),
       category: formState.category.trim(),
       stockQuantity: Number(formState.stockQuantity),
       price: Number(formState.price),

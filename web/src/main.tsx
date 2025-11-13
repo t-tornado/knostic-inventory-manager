@@ -1,7 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { AppProvider } from "@/app/providers";
 import type { FeatureRoutes } from "@/shared/types";
 
@@ -17,17 +15,5 @@ const appRoutes = Object.values(routeModules).flatMap((module) => {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppProvider routes={appRoutes} />
-    <ToastContainer
-      position='top-right'
-      autoClose={5000}
-      hideProgressBar={true}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme='light'
-    />
   </StrictMode>
 );

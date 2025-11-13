@@ -63,11 +63,6 @@ export const StoreList = () => {
     setModalOpen(true);
   };
 
-  const handleFiltersChange = (filters: unknown[]) => {
-    // Filters change handler - can be extended with proper typing if needed
-    console.log("Filters changed:", filters);
-  };
-
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedStore(null);
@@ -85,7 +80,7 @@ export const StoreList = () => {
       });
       handleCloseModal();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
+      // donothing
     }
   };
 
@@ -97,8 +92,6 @@ export const StoreList = () => {
       });
       handleCloseModal();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
-      // Restore original store in modal if still open
       if (originalStore) {
         setSelectedStore(originalStore);
         setModalOpen(true);
@@ -111,7 +104,7 @@ export const StoreList = () => {
       await deleteStoreMutation.mutateAsync(storeId);
       handleCloseModal();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
+      // donothing
     }
   };
 
@@ -138,7 +131,6 @@ export const StoreList = () => {
         getData={getStoresData}
         getRowId={(row) => (row?.id as string) || String(Math.random())}
         onRowClick={(row: unknown) => handleRowClick(row as Store)}
-        onFiltersChange={handleFiltersChange}
         customization={{
           formatFieldLabel: formatStoreFieldLabel,
           renderCellValue: renderStoreCellValue,

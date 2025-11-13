@@ -37,7 +37,7 @@ export const StatCard = ({
 
   const iconStyle = iconColors[iconColor];
 
-  // Use provided testId or generate from title (e.g., "Total Stores" -> "stat-total-stores")
+  // adding enhanced flavors here.
   const finalTestId =
     testId || `stat-${title.toLowerCase().replace(/\s+/g, "-")}`;
 

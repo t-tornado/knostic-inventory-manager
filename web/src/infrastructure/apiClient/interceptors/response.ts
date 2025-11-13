@@ -1,7 +1,13 @@
-import type { AxiosError } from "axios";
+import type { AxiosResponse, AxiosError } from "axios";
 import type { ApiResponse } from "@/shared/api";
 
-export const errorInterceptor = (error: AxiosError<ApiResponse<unknown>>) => {
+export const responseInterceptor = (response: AxiosResponse) => {
+  return response;
+};
+
+export const errorInterceptor = (
+  error: AxiosError<ApiResponse<unknown>>
+): Promise<never> => {
   if (error.response?.data) {
     const responseData = error.response.data;
 

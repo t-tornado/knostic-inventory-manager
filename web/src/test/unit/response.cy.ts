@@ -1,8 +1,8 @@
-import { responseInterceptor } from "@/infrastructure/apiClient/axios/interceptors/response";
+import { responseInterceptor } from "@/infrastructure/apiClient/interceptors/response";
 import type { AxiosResponse } from "axios";
 
 describe("responseInterceptor", () => {
-  it("should extract data from response", () => {
+  it("should return response unchanged", () => {
     const mockData = { id: 1, name: "Test" };
     const response: AxiosResponse<typeof mockData> = {
       data: mockData,
@@ -14,9 +14,8 @@ describe("responseInterceptor", () => {
 
     const result = responseInterceptor(response);
 
-    expect(result).to.deep.equal(mockData);
-    expect(result).to.have.property("id", 1);
-    expect(result).to.have.property("name", "Test");
+    expect(result).to.deep.equal(response);
+    expect(result.data).to.deep.equal(mockData);
   });
 
   it("should handle null data", () => {
@@ -30,8 +29,8 @@ describe("responseInterceptor", () => {
 
     const result = responseInterceptor(response);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    expect(result).to.be.null;
+    expect(result).to.deep.equal(response);
+    expect(result.data).to.be.null;
   });
 
   it("should handle array data", () => {
@@ -46,12 +45,12 @@ describe("responseInterceptor", () => {
 
     const result = responseInterceptor(response);
 
-    expect(result).to.deep.equal(mockData);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    expect(Array.isArray(result)).to.be.true;
-    if (Array.isArray(result)) {
-      expect(result).to.have.length(2);
-      expect(result[0]).to.have.property("id", 1);
+    expect(result).to.deep.equal(response);
+    expect(result.data).to.deep.equal(mockData);
+    expect(Array.isArray(result.data)).to.be.true;
+    if (Array.isArray(result.data)) {
+      expect(result.data).to.have.length(2);
+      expect(result.data[0]).to.have.property("id", 1);
     }
   });
 
@@ -75,10 +74,15 @@ describe("responseInterceptor", () => {
 
     const result = responseInterceptor(response);
 
-    expect(result).to.deep.equal(mockData);
-    if (result && typeof result === "object" && "user" in result) {
-      expect((result as typeof mockData).user.name).to.equal("John");
-      expect((result as typeof mockData).user.settings.theme).to.equal("dark");
+    expect(result).to.deep.equal(response);
+    expect(result.data).to.deep.equal(mockData);
+    if (
+      result.data &&
+      typeof result.data === "object" &&
+      "user" in result.data
+    ) {
+      expect(result.data.user.name).to.equal("John");
+      expect(result.data.user.settings.theme).to.equal("dark");
     }
   });
 });

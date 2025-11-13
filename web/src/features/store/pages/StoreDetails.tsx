@@ -107,11 +107,6 @@ export const StoreDetails = () => {
     setDetailOpen(true);
   };
 
-  const handleFiltersChange = (filters: unknown[]) => {
-    // Filters change handler - can be extended with proper typing if needed
-    console.log("Filters changed:", filters);
-  };
-
   const handleCloseDetail = () => {
     setDetailOpen(false);
     setSelectedProduct(null);
@@ -131,14 +126,11 @@ export const StoreDetails = () => {
           price: updatedProduct.price,
         },
       });
-      // Invalidate store details to refresh stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.stores.detailWithStats(storeId),
       });
       handleCloseDetail();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
-      // Restore original product in modal if still open
       if (originalProduct) {
         setSelectedProduct(originalProduct);
         setDetailOpen(true);
@@ -155,26 +147,24 @@ export const StoreDetails = () => {
         stockQuantity: data.stockQuantity,
         price: data.price,
       });
-      // Invalidate store details to refresh stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.stores.detailWithStats(storeId),
       });
       handleCloseDetail();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
+      // donothing
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
     try {
       await deleteProductMutation.mutateAsync(productId);
-      // Invalidate store details to refresh stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.stores.detailWithStats(storeId),
       });
       handleCloseDetail();
     } catch {
-      // Error is handled by the mutation (toast + rollback)
+      // donothing
     }
   };
 
@@ -184,12 +174,9 @@ export const StoreDetails = () => {
         id: store.id,
         data: { name: store.name },
       });
-      // Mutation handles cache updates, no need to refetch
       setStoreModalOpen(false);
       setOriginalStore(null);
     } catch {
-      // Error is handled by the mutation (toast + rollback)
-      // Restore original store in modal if still open
       if (originalStore) {
         setStoreModalOpen(true);
       }
@@ -350,7 +337,6 @@ export const StoreDetails = () => {
             onRowClick={(row: unknown) =>
               handleRowClick(row as ProductWithStoreName)
             }
-            onFiltersChange={handleFiltersChange}
             customization={createProductTableCustomization(false)}
             features={{
               enableFiltering: true,

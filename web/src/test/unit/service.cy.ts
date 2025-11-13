@@ -1,12 +1,9 @@
 import { createDashboardService } from "@/features/dashboard/service";
-import type { BaseApiClient } from "@/infrastructure/apiClient/base";
+import type { IApiClient } from "@/infrastructure/apiClient";
 import type { DashboardData, ActivityItem } from "@/features/dashboard/types";
 import type { ApiResponse } from "@/shared/api";
 
 describe("DashboardService", () => {
-  let mockApiClient: BaseApiClient;
-  let dashboardService: ReturnType<typeof createDashboardService>;
-
   const mockDashboardData: DashboardData = {
     stats: {
       totalStores: 5,
@@ -61,43 +58,46 @@ describe("DashboardService", () => {
     },
   ];
 
-  let getStub: ReturnType<typeof cy.stub>;
+  let mockApiClient: IApiClient;
+  let dashboardService: ReturnType<typeof createDashboardService>;
 
   beforeEach(() => {
-    getStub = cy.stub();
+    const mockGet = cy.stub();
     mockApiClient = {
-      get: getStub,
+      get: mockGet,
       post: cy.stub(),
       put: cy.stub(),
       delete: cy.stub(),
-    } as unknown as BaseApiClient;
+    } as unknown as IApiClient;
 
     dashboardService = createDashboardService(mockApiClient);
   });
 
   describe("getDashboard", () => {
     it("should fetch dashboard data successfully", async () => {
-      getStub.resolves({
-        data: mockDashboardData,
-      } as ApiResponse<DashboardData>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: mockDashboardData } as ApiResponse<DashboardData>,
+      });
 
       const result = await dashboardService.getDashboard();
 
       expect(result).to.deep.equal(mockDashboardData);
-      expect(getStub).to.have.been.calledWith("/dashboard");
+      expect(mockApiClient.get).to.have.been.calledWith("/dashboard");
     });
 
     it("should throw error when API returns errors", async () => {
-      getStub.resolves({
-        errors: [
-          {
-            type: "ServerError",
-            field: "server",
-            code: "INTERNAL_ERROR",
-            message: "Failed to fetch dashboard data",
-          },
-        ],
-      } as ApiResponse<DashboardData>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: {
+          errors: [
+            {
+              type: "ServerError",
+              field: "server",
+              code: "INTERNAL_ERROR",
+              message: "Failed to fetch dashboard data",
+            },
+          ],
+        } as ApiResponse<DashboardData>,
+      });
 
       try {
         await dashboardService.getDashboard();
@@ -106,14 +106,14 @@ describe("DashboardService", () => {
         expect((error as Error).message).to.equal(
           "Failed to fetch dashboard data"
         );
-        expect(getStub).to.have.been.calledWith("/dashboard");
+        expect(mockApiClient.get).to.have.been.calledWith("/dashboard");
       }
     });
 
     it("should throw default error message when no data returned", async () => {
-      getStub.resolves({
-        data: undefined,
-      } as ApiResponse<DashboardData>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: undefined } as ApiResponse<DashboardData>,
+      });
 
       try {
         await dashboardService.getDashboard();
@@ -127,7 +127,7 @@ describe("DashboardService", () => {
 
     it("should handle network errors", async () => {
       const networkError = new Error("Network request failed");
-      getStub.rejects(networkError);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).rejects(networkError);
 
       try {
         await dashboardService.getDashboard();
@@ -153,9 +153,9 @@ describe("DashboardService", () => {
         activity: [],
       };
 
-      getStub.resolves({
-        data: emptyDashboardData,
-      } as ApiResponse<DashboardData>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: emptyDashboardData } as ApiResponse<DashboardData>,
+      });
 
       const result = await dashboardService.getDashboard();
 
@@ -167,20 +167,20 @@ describe("DashboardService", () => {
 
   describe("getActivities", () => {
     it("should fetch activities successfully", async () => {
-      getStub.resolves({
-        data: mockActivitiesData,
-      } as ApiResponse<ActivityItem[]>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: mockActivitiesData } as ApiResponse<ActivityItem[]>,
+      });
 
       const result = await dashboardService.getActivities();
 
       expect(result).to.deep.equal(mockActivitiesData);
-      expect(getStub).to.have.been.calledWith("/dashboard/activity");
+      expect(mockApiClient.get).to.have.been.calledWith("/dashboard/activity");
     });
 
     it("should return empty array when no activities", async () => {
-      getStub.resolves({
-        data: [],
-      } as ApiResponse<ActivityItem[]>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: [] } as ApiResponse<ActivityItem[]>,
+      });
 
       const result = await dashboardService.getActivities();
 
@@ -188,30 +188,34 @@ describe("DashboardService", () => {
     });
 
     it("should throw error when API returns errors", async () => {
-      getStub.resolves({
-        errors: [
-          {
-            type: "ServerError",
-            field: "server",
-            code: "INTERNAL_ERROR",
-            message: "Failed to fetch activities",
-          },
-        ],
-      } as ApiResponse<ActivityItem[]>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: {
+          errors: [
+            {
+              type: "ServerError",
+              field: "server",
+              code: "INTERNAL_ERROR",
+              message: "Failed to fetch activities",
+            },
+          ],
+        } as ApiResponse<ActivityItem[]>,
+      });
 
       try {
         await dashboardService.getActivities();
         expect.fail("Should have thrown an error");
       } catch (error: unknown) {
         expect((error as Error).message).to.equal("Failed to fetch activities");
-        expect(getStub).to.have.been.calledWith("/dashboard/activity");
+        expect(mockApiClient.get).to.have.been.calledWith(
+          "/dashboard/activity"
+        );
       }
     });
 
     it("should throw default error message when no data returned", async () => {
-      getStub.resolves({
-        data: undefined,
-      } as ApiResponse<ActivityItem[]>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: undefined } as ApiResponse<ActivityItem[]>,
+      });
 
       try {
         await dashboardService.getActivities();
@@ -242,9 +246,9 @@ describe("DashboardService", () => {
         },
       ];
 
-      getStub.resolves({
-        data: activitiesWithAllTypes,
-      } as ApiResponse<ActivityItem[]>);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).resolves({
+        data: { data: activitiesWithAllTypes } as ApiResponse<ActivityItem[]>,
+      });
 
       const result = await dashboardService.getActivities();
 
@@ -256,7 +260,7 @@ describe("DashboardService", () => {
 
     it("should handle network errors", async () => {
       const networkError = new Error("Network request failed");
-      getStub.rejects(networkError);
+      (mockApiClient.get as ReturnType<typeof cy.stub>).rejects(networkError);
 
       try {
         await dashboardService.getActivities();
