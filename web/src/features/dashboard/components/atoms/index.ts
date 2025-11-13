@@ -4,4 +4,3 @@ export { FilterButton } from "./FilterButton";
 export { AlertItem } from "./AlertItem";
 export { ActivityItem } from "./ActivityItem";
 export { SectionHeader } from "./SectionHeader";
-export { SectionCard } from "./SectionCard";

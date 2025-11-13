@@ -33,8 +33,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningIcon from "@mui/icons-material/Warning";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { EditProductModal } from "@/shared/components/EditProductModal";
-import { EditStoreModal } from "@/shared/components/EditStoreModal";
+import { StoreMetaModal } from "@/shared/components/StoreMetaModal";
 import type { ProductWithStoreName } from "@/features/product/types";
 import { useStoreDetails, useUpdateStore, useDeleteStore } from "../hooks";
 import { useUpdateProduct, useDeleteProduct } from "@/features/product/hooks";
@@ -43,6 +42,7 @@ import { PageError } from "@/shared/components/PageError";
 import { PageLoader } from "@/shared/components/PageLoader";
 import type { Store } from "@/core/models/store/model";
 import { PRODUCT_CATEGORIES } from "@/features/product/constants";
+import { ProductMetaModal } from "@/shared/components/ProductMetaModal/ProductMetaModal";
 
 const storeProductsSchema: TableSchema = {
   products: {
@@ -175,7 +175,7 @@ export const StoreDetails = () => {
   const updateStoreMutation = useUpdateStore();
   const deleteStoreMutation = useDeleteStore();
 
-  const handleSaveProduct = async (updatedProduct: ProductWithStoreName) => {
+  const handleUpdateProduct = async (updatedProduct: ProductWithStoreName) => {
     try {
       await updateProductMutation.mutateAsync({
         id: updatedProduct.id,
@@ -211,7 +211,7 @@ export const StoreDetails = () => {
     }
   };
 
-  const handleSaveStoreInfo = async (store: Store) => {
+  const handleUpdateStoreInfo = async (store: Store) => {
     try {
       await updateStoreMutation.mutateAsync({
         id: store.id,
@@ -409,23 +409,27 @@ export const StoreDetails = () => {
         </Box>
       </Box>
       {selectedProduct && (
-        <EditProductModal
+        <ProductMetaModal
           open={isDetailOpen}
+          mode='edit'
           product={selectedProduct}
           storeOptions={storeOptions}
           categoryOptions={categoryOptions}
           onClose={handleCloseDetail}
-          onSave={handleSaveProduct}
+          onUpdate={handleUpdateProduct}
           onDelete={handleDeleteProduct}
         />
       )}
-      <EditStoreModal
-        open={isStoreModalOpen}
-        store={storeInfo}
-        onClose={() => setStoreModalOpen(false)}
-        onSave={handleSaveStoreInfo}
-        onDelete={handleDeleteStoreInfo}
-      />
+      {storeInfo && (
+        <StoreMetaModal
+          open={isStoreModalOpen}
+          mode='edit'
+          store={storeInfo}
+          onClose={() => setStoreModalOpen(false)}
+          onUpdate={handleUpdateStoreInfo}
+          onDelete={handleDeleteStoreInfo}
+        />
+      )}
     </PageLayout>
   );
 };

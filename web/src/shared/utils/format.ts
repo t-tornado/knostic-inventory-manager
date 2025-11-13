@@ -68,3 +68,17 @@ export const formatTimeAgo = (timestamp: string | Date): string => {
   const diffInDays = Math.floor(diffInHours / 24);
   return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 };
+
+/**
+ * Formats a date and time with medium date style and short time style
+ * (e.g., "Jan 15, 2024, 3:45 PM")
+ * @param date - The date string or Date object to format
+ * @returns Formatted date and time string
+ */
+export const formatDateTime = (date: string | Date): string => {
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return dateObj.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+};

@@ -7,11 +7,16 @@ export const BusinessTable = forwardRef<
   BusinessTableHandle,
   BusinessTableProps
 >((props, ref) => {
-  const { onFiltersChange, getRowId, onRowClick, ...config } = props;
+  const { onFiltersChange, onStateChange, getRowId, onRowClick, ...config } =
+    props;
 
   return (
     <TableProvider config={config} getRowId={getRowId} onRowClick={onRowClick}>
-      <BusinessTableInner onFiltersChange={onFiltersChange} tableRef={ref} />
+      <BusinessTableInner
+        onFiltersChange={onFiltersChange}
+        onStateChange={onStateChange}
+        tableRef={ref}
+      />
     </TableProvider>
   );
 });

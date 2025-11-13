@@ -17,6 +17,7 @@ export const StoreTableHeaderActions = ({
         variant='outlined'
         startIcon={<DownloadIcon />}
         onClick={onExport}
+        disabled
         size='small'
       >
         Export

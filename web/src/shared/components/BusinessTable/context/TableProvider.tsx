@@ -56,9 +56,25 @@ export function TableProvider({
     };
 
     if (config.initialState) {
+      // Build column visibility: if URL state specifies visible columns,
+      // set all others to false; otherwise use defaults
+      let columnVisibility = baseState.columnVisibility;
+      const urlColumnVisibility = config.initialState.columnVisibility;
+      if (urlColumnVisibility) {
+        // URL state provides specific visible columns
+        // Start with all columns hidden, then set visible ones to true
+        columnVisibility = initialColumns.reduce((acc, col) => {
+          // If URL specifies this column as visible, show it; otherwise hide it
+          acc[col.id] = urlColumnVisibility[col.id] === true;
+          return acc;
+        }, {} as Record<string, boolean>);
+      }
+
       return {
         ...baseState,
         ...config.initialState,
+        // Override columnVisibility with merged result
+        columnVisibility,
         // Deep merge for nested objects
         pagination: {
           ...baseState.pagination,
@@ -72,6 +88,11 @@ export function TableProvider({
           ...baseState.grouping,
           ...config.initialState.grouping,
         },
+        // Deep merge filters array
+        filters: config.initialState.filters ?? baseState.filters,
+        // Deep merge columnSorting array
+        columnSorting:
+          config.initialState.columnSorting ?? baseState.columnSorting,
       };
     }
 

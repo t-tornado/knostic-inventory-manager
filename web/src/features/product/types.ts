@@ -19,38 +19,12 @@ export interface ProductQueryResult {
   pageSize: number;
 }
 
-export interface IProductRepository {
-  getProducts(params?: ProductQueryParams): Promise<ProductQueryResult>;
-  getProductById(id: string): Promise<Product>;
-  createProduct(
-    product: Omit<Product, "id" | "createdAt" | "updatedAt">
-  ): Promise<Product>;
-  updateProduct(
-    id: string,
-    product: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>
-  ): Promise<Product>;
-  deleteProduct(id: string): Promise<void>;
-}
+export type RawProductType = Omit<Product, "id" | "createdAt" | "updatedAt">;
 
 export interface IProductService {
   getProducts(params?: ProductQueryParams): Promise<ProductQueryResult>;
   getProductById(id: string): Promise<Product>;
-  createProduct(data: {
-    storeId: string;
-    name: string;
-    category: string;
-    stockQuantity: number;
-    price: number;
-  }): Promise<Product>;
-  updateProduct(
-    id: string,
-    data: {
-      storeId?: string;
-      name?: string;
-      category?: string;
-      stockQuantity?: number;
-      price?: number;
-    }
-  ): Promise<Product>;
+  createProduct(data: RawProductType): Promise<Product>;
+  updateProduct(id: string, data: Partial<RawProductType>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
 }

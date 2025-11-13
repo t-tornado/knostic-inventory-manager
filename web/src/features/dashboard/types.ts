@@ -66,9 +66,6 @@ export interface DashboardDataOptions {
   activityLimit?: number;
 }
 
-export interface IDashboardRepository {
-  getDashboard(): Promise<DashboardData>;
-}
 export interface IDashboardService {
   getDashboard(): Promise<DashboardData>;
 }

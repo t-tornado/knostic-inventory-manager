@@ -40,18 +40,6 @@ export interface ProductQueryResult {
   pageSize: number;
 }
 
-export interface IStoreRepository {
-  getStores(params?: StoreQueryParams): Promise<StoreQueryResult>;
-  getStoreDetails(id: string): Promise<StoreDetails>;
-  getStoreProducts(
-    storeId: string,
-    params?: ProductQueryParams
-  ): Promise<ProductQueryResult>;
-  createStore(data: { name: string }): Promise<Store>;
-  updateStore(id: string, data: { name: string }): Promise<Store>;
-  deleteStore(id: string): Promise<void>;
-}
-
 export interface IStoreService {
   getStores(params?: StoreQueryParams): Promise<StoreQueryResult>;
   getStoreDetails(id: string): Promise<StoreDetails>;
