@@ -4,7 +4,7 @@ import type {
   StoreQueryResult,
 } from "../../domain/repositories/IStoreRepository";
 import type { IProductRepository } from "../../domain/repositories/IProductRepository";
-import type { Store, StoreId } from "../../domain/entities/Store";
+import type { Store } from "../../domain/entities/Store";
 import { createStoreId } from "../../domain/entities/Store";
 import type { IDatabase } from "../../infrastructure/database";
 

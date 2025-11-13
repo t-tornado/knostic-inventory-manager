@@ -1,7 +1,6 @@
 import type { IDatabase } from "./IDatabase";
 
 export async function runMigrations(db: IDatabase): Promise<void> {
-  // Create stores table
   await db.execute(`
     CREATE TABLE IF NOT EXISTS stores (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -11,7 +10,6 @@ export async function runMigrations(db: IDatabase): Promise<void> {
     )
   `);
 
-  // Create products table
   await db.execute(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +24,6 @@ export async function runMigrations(db: IDatabase): Promise<void> {
     )
   `);
 
-  // Create indexes
   await db.execute(`
     CREATE INDEX IF NOT EXISTS idx_products_store_id ON products(store_id)
   `);

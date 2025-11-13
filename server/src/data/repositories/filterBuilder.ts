@@ -1,7 +1,4 @@
-import type {
-  Filter,
-  FilterOperator,
-} from "../../domain/repositories/filterTypes";
+import type { Filter } from "../../domain/repositories/filterTypes";
 
 /**
  * Maps frontend field names to database column names

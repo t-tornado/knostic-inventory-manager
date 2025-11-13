@@ -1,156 +1,113 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type { StoreService } from "../../../application/services/StoreService";
-import { successResponse, errorResponse } from "../types";
+import { successResponse } from "../types";
 import {
   createValidationError,
   createNotFoundError,
-  createInternalServerError,
 } from "../../../domain/errors";
 import { apiPath } from "../../../shared/config/apiVersion";
+import "../middleware/shared/types"; // Import for Express type augmentation
 
 export class StoreController {
   constructor(private storeService: StoreService) {}
 
-  async getAllStores(req: Request, res: Response): Promise<void> {
+  async getAllStores(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const path = apiPath("/stores");
     try {
-      const validatedParams = (req as any).validatedTableQuery || {};
+      const validatedParams = req.validatedTableQuery || {};
       const result = await this.storeService.getAllStores(validatedParams);
       const response = successResponse(result, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "stores",
-            "FETCH_ERROR",
-            "Failed to fetch stores"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async getStoreById(req: Request, res: Response): Promise<void> {
+  async getStoreById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}`);
 
     if (!id) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "id",
-            "MISSING_REQUIRED",
-            "Store ID is required"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Store ID is required"
+      ) as unknown as Error;
     }
 
     try {
       const store = await this.storeService.getStoreById(id);
       if (!store) {
-        const response = errorResponse(
-          [
-            createNotFoundError(
-              "id",
-              "STORE_NOT_FOUND",
-              `Store with id '${id}' not found`
-            ),
-          ],
-          path,
-          "GET"
-        );
-        res.status(404).json(response);
-        return;
+        throw createNotFoundError(
+          "id",
+          "STORE_NOT_FOUND",
+          `Store with id '${id}' not found`
+        ) as unknown as Error;
       }
 
       const response = successResponse(store, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "store",
-            "FETCH_ERROR",
-            "Failed to fetch store"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async getStoreDetails(req: Request, res: Response): Promise<void> {
+  async getStoreDetails(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}/details`);
 
     if (!id) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "id",
-            "MISSING_REQUIRED",
-            "Store ID is required"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Store ID is required"
+      ) as unknown as Error;
     }
 
     try {
       const storeDetails = await this.storeService.getStoreDetails(id);
       if (!storeDetails) {
-        const response = errorResponse(
-          [
-            createNotFoundError(
-              "id",
-              "STORE_NOT_FOUND",
-              `Store with id '${id}' not found`
-            ),
-          ],
-          path,
-          "GET"
-        );
-        res.status(404).json(response);
-        return;
+        throw createNotFoundError(
+          "id",
+          "STORE_NOT_FOUND",
+          `Store with id '${id}' not found`
+        ) as unknown as Error;
       }
 
       const response = successResponse(storeDetails, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "store",
-            "FETCH_ERROR",
-            "Failed to fetch store details"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async createStore(req: Request, res: Response): Promise<void> {
+  async createStore(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const path = apiPath("/stores");
-    const validatedBody = (req as any).validatedCreateStoreBody as {
-      name: string;
-    };
+    const validatedBody = req.validatedCreateStoreBody;
+
+    if (!validatedBody) {
+      throw createValidationError(
+        "body",
+        "MISSING_REQUIRED",
+        "Request body validation failed"
+      ) as unknown as Error;
+    }
 
     try {
       const store = await this.storeService.createStore({
@@ -159,129 +116,74 @@ export class StoreController {
       const response = successResponse(store, path, "POST");
       res.status(201).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "store",
-            "CREATE_ERROR",
-            "Failed to create store"
-          ),
-        ],
-        path,
-        "POST"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async updateStore(req: Request, res: Response): Promise<void> {
+  async updateStore(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/stores/${id}`);
-    const { name } = req.body as { name?: string };
 
-    const errors = [];
     if (!id) {
-      errors.push(
-        createValidationError("id", "MISSING_REQUIRED", "Store ID is required")
-      );
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Store ID is required"
+      ) as unknown as Error;
     }
 
-    if (
-      name !== undefined &&
-      (typeof name !== "string" || name.trim().length === 0)
-    ) {
-      errors.push(
-        createValidationError(
-          "name",
-          "INVALID_VALUE",
-          "Store name cannot be empty"
-        )
-      );
-    }
+    const validatedBody = req.validatedUpdateStoreBody;
 
-    if (errors.length > 0) {
-      const response = errorResponse(errors, path, "PUT");
-      res.status(400).json(response);
-      return;
+    if (!validatedBody) {
+      throw createValidationError(
+        "body",
+        "MISSING_REQUIRED",
+        "Request body validation failed"
+      ) as unknown as Error;
     }
 
     try {
-      const updateData: { name?: string } = {};
-      if (name !== undefined) {
-        updateData.name = name;
-      }
-      const store = await this.storeService.updateStore(id!, updateData);
+      const store = await this.storeService.updateStore(id, validatedBody);
       const response = successResponse(store, path, "PUT");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createNotFoundError(
-            "id",
-            "STORE_NOT_FOUND",
-            `Store with id '${id}' not found`
-          ),
-        ],
-        path,
-        "PUT"
-      );
-      res.status(404).json(response);
+      next(error);
     }
   }
 
-  async deleteStore(req: Request, res: Response): Promise<void> {
+  async deleteStore(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
-    const path = apiPath(`/stores/${id}`);
 
     if (!id) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "id",
-            "MISSING_REQUIRED",
-            "Store ID is required"
-          ),
-        ],
-        path,
-        "DELETE"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Store ID is required"
+      ) as unknown as Error;
     }
 
     try {
       const deleted = await this.storeService.deleteStore(id);
       if (!deleted) {
-        const response = errorResponse(
-          [
-            createNotFoundError(
-              "id",
-              "STORE_NOT_FOUND",
-              `Store with id '${id}' not found`
-            ),
-          ],
-          path,
-          "DELETE"
-        );
-        res.status(404).json(response);
-        return;
+        throw createNotFoundError(
+          "id",
+          "STORE_NOT_FOUND",
+          `Store with id '${id}' not found`
+        ) as unknown as Error;
       }
 
       // 204 No Content - successful deletion with no response body
       res.status(204).send("");
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "store",
-            "DELETE_ERROR",
-            "Failed to delete store"
-          ),
-        ],
-        path,
-        "DELETE"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 }

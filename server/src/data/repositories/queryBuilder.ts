@@ -1,5 +1,6 @@
 import type { Filter } from "../../domain/repositories/filterTypes";
 import { buildFilterConditions } from "./filterBuilder";
+import { Logger } from "../../shared/logger";
 
 export interface QueryBuilderOptions {
   searchFields?: string[];
@@ -33,7 +34,6 @@ export function buildQuery(options: QueryBuilderOptions): QueryBuilderResult {
   const conditions: string[] = [];
   const queryParams: unknown[] = [];
 
-  // Build search conditions
   if (searchTerm && searchFields && searchFields.length > 0) {
     const searchClause = `(${searchFields
       .map((field) => {
@@ -46,7 +46,6 @@ export function buildQuery(options: QueryBuilderOptions): QueryBuilderResult {
     queryParams.push(...searchFields.map(() => searchParam));
   }
 
-  // Build filter conditions
   if (filters) {
     try {
       const parsedFilters = JSON.parse(filters) as Filter[];
@@ -58,15 +57,15 @@ export function buildQuery(options: QueryBuilderOptions): QueryBuilderResult {
         conditions.push(filterConditions);
       }
     } catch (error) {
-      console.error("Failed to parse filters:", error);
+      Logger.error("Failed to parse filters", error as Error, {
+        filters,
+      });
     }
   }
 
-  // Build WHERE clause
   const whereClause =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  // Build ORDER BY clause
   let orderBy = defaultSort;
   if (sort) {
     try {
@@ -86,7 +85,9 @@ export function buildQuery(options: QueryBuilderOptions): QueryBuilderResult {
         }
       }
     } catch (error) {
-      console.error("Failed to parse sort:", error);
+      Logger.error("Failed to parse sort", error as Error, {
+        sort,
+      });
     }
   }
 

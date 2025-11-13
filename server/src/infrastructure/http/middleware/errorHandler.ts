@@ -1,32 +1,70 @@
-import express, {
-  type Express,
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import { type Express, type Request, type Response } from "express";
 import { errorResponse } from "../../../presentation/http/types";
-import { createInternalServerError } from "../../../domain/errors";
+import {
+  createInternalServerError,
+  type ServerError,
+} from "../../../domain/errors";
+import { Logger } from "../../../shared/logger";
+
+function getStatusCodeForError(error: ServerError): number {
+  switch (error.type) {
+    case "validation":
+      return 400;
+    case "not_found":
+      return 404;
+    case "db":
+      return 500;
+    case "internal_server_error":
+      return 500;
+    default:
+      return 500;
+  }
+}
 
 /**
- * Express-specific error handling middleware
+ * Integrated error handling middleware
  */
 export function setupErrorHandler(app: Express): void {
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error("Error:", err);
-    const path = req.path || req.url || "/";
-    const method = req.method || "UNKNOWN";
+  app.use((err: Error, req: Request, res: Response) => {
+    const context = {
+      path: req.path || req.url || "/",
+      method: req.method || "UNKNOWN",
+      params: req.params,
+      query: req.query,
+      body: req.body,
+    };
+
+    Logger.error("Request error", err, context);
+
+    const domainError = err as unknown as ServerError;
+    if (
+      domainError.type &&
+      domainError.code &&
+      domainError.message &&
+      domainError.field
+    ) {
+      const statusCode = getStatusCodeForError(domainError);
+      const response = errorResponse(
+        [domainError],
+        context.path,
+        context.method
+      );
+      res.status(statusCode).json(response);
+      return;
+    }
+
+    // Handle unknown errors
+    const isDevelopment = process.env.NODE_ENV === "development";
     const response = errorResponse(
       [
         createInternalServerError(
           "server",
           "INTERNAL_ERROR",
-          process.env.NODE_ENV === "development"
-            ? err.message
-            : "Internal server error"
+          isDevelopment ? err.message : "Internal server error"
         ),
       ],
-      path,
-      method
+      context.path,
+      context.method
     );
     res.status(500).json(response);
   });

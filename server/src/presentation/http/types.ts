@@ -1,8 +1,5 @@
 import type { ServerError } from "../../domain/errors/types";
 
-/**
- * RESTful API Response structure following REST API design best practices
- */
 export interface ApiResponse<T = unknown> {
   data?: T;
   errors?: ServerError[];
@@ -13,9 +10,6 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
-/**
- * Success response helper
- */
 export function successResponse<T>(
   data: T,
   path: string,
@@ -31,9 +25,6 @@ export function successResponse<T>(
   };
 }
 
-/**
- * Error response helper
- */
 export function errorResponse(
   errors: ServerError[],
   path: string,
@@ -47,4 +38,12 @@ export function errorResponse(
       method,
     },
   };
+}
+
+export interface ValidatedTableQueryParams {
+  search?: string | undefined;
+  filters?: string | undefined;
+  sort?: string | undefined;
+  page?: number | undefined;
+  pageSize?: number | undefined;
 }

@@ -3,8 +3,7 @@ import type {
   ProductQueryParams,
   ProductQueryResult,
 } from "../../domain/repositories/IProductRepository";
-import type { Product, ProductId } from "../../domain/entities/Product";
-import type { StoreId } from "../../domain/entities/Store";
+import type { Product } from "../../domain/entities/Product";
 import type { Price } from "../../domain/entities/ValueObject";
 import { createProductId } from "../../domain/entities/Product";
 import { createStoreId } from "../../domain/entities/Store";

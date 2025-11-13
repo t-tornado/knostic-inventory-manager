@@ -12,60 +12,49 @@ import { StoreRepository } from "./data/repositories/StoreRepository";
 import { ProductRepository } from "./data/repositories/ProductRepository";
 import { StoreService } from "./application/services/StoreService";
 import { ProductService } from "./application/services/ProductService";
-import { DashboardService } from "./application/services/DashboardService";
+import { DashboardService } from "./application/services/dashboard";
 import { StoreController } from "./presentation/http/controllers/StoreController";
 import { ProductController } from "./presentation/http/controllers/ProductController";
 import { DashboardController } from "./presentation/http/controllers/DashboardController";
 import { setupRoutes } from "./presentation/http/routes";
+import { Logger } from "./shared/logger";
 
 import path from "path";
 import fs from "fs";
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-// Use file-based database by default, or in-memory if DB_PATH is set to ":memory:"
-// Default to ./data/inventory.db relative to the server directory
-// When running from server directory, use ./data/inventory.db
-// When running from project root, use ./server/data/inventory.db
 let DB_PATH =
   process.env.DB_PATH ||
   (process.cwd().endsWith("server")
     ? path.resolve(process.cwd(), "data", "inventory.db")
     : path.resolve(process.cwd(), "server", "data", "inventory.db"));
 
-// Ensure the data directory exists if using a file-based database
 if (DB_PATH !== ":memory:") {
   const dbDir = path.dirname(DB_PATH);
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
-    console.log(`Created database directory: ${dbDir}`);
+    Logger.info(`Created database directory: ${dbDir}`);
   }
-  // Convert to absolute path
   DB_PATH = path.resolve(DB_PATH);
-  console.log(`Using database at: ${DB_PATH}`);
+  Logger.info(`Using database at: ${DB_PATH}`);
 }
-// Seed database on startup if SEED_DB is set to 'true' (only for in-memory or empty databases)
 const SHOULD_SEED = process.env.SEED_DB === "true";
 
 async function bootstrap(): Promise<void> {
-  // Initialize database
   const database = new SqliteDatabase(DB_PATH);
   await database.connect();
-  console.log("Database connected");
+  Logger.info("Database connected");
 
-  // Run migrations
   await runMigrations(database);
-  console.log("Migrations completed");
+  Logger.info("Migrations completed");
 
-  // Initialize repositories
   const storeRepository = new StoreRepository(database);
   const productRepository = new ProductRepository(database);
 
-  // Seed database if requested
   if (SHOULD_SEED) {
     await seedDatabase(database, storeRepository, productRepository);
   }
 
-  // Initialize services
   const storeService = new StoreService(
     storeRepository,
     productRepository,
@@ -74,15 +63,12 @@ async function bootstrap(): Promise<void> {
   const productService = new ProductService(productRepository);
   const dashboardService = new DashboardService(database);
 
-  // Initialize controllers
   const storeController = new StoreController(storeService);
   const productController = new ProductController(productService);
   const dashboardController = new DashboardController(dashboardService);
 
-  // Initialize HTTP server (Express implementation)
   const httpServer = new ExpressHttpServer();
 
-  // Setup Express-specific middleware (body parser)
   setupBodyParser(httpServer.getExpressApp());
 
   setupRoutes(
@@ -94,27 +80,26 @@ async function bootstrap(): Promise<void> {
 
   setupErrorHandler(httpServer.getExpressApp());
 
-  // Start server
   httpServer.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Database: ${DB_PATH}`);
+    Logger.info(`Server is running on port ${PORT}`, { port: PORT });
+    Logger.info(`Database: ${DB_PATH}`, { dbPath: DB_PATH });
   });
 
   // Graceful shutdown
   process.on("SIGINT", async () => {
-    console.log("\nShutting down gracefully...");
+    Logger.info("Shutting down gracefully...", { signal: "SIGINT" });
     await database.disconnect();
     process.exit(0);
   });
 
   process.on("SIGTERM", async () => {
-    console.log("\nShutting down gracefully...");
+    Logger.info("Shutting down gracefully...", { signal: "SIGTERM" });
     await database.disconnect();
     process.exit(0);
   });
 }
 
 bootstrap().catch((error) => {
-  console.error("Failed to start server:", error);
+  Logger.error("Failed to start server", error as Error);
   process.exit(1);
 });

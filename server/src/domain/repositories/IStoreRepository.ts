@@ -1,11 +1,11 @@
 import type { Store, StoreId } from "../entities/Store";
 
 export interface StoreQueryParams {
-  search?: string;
-  filters?: string; // JSON string of filters
-  sort?: string; // JSON string of sort array
-  page?: number;
-  pageSize?: number;
+  search?: string | undefined;
+  filters?: string | undefined; // JSON string of filters
+  sort?: string | undefined; // JSON string of sort array
+  page?: number | undefined;
+  pageSize?: number | undefined;
 }
 
 export interface StoreQueryResult {

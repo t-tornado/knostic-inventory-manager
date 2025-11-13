@@ -2,6 +2,7 @@ import type { IDatabase } from "./IDatabase";
 import type { IStoreRepository } from "../../domain/repositories/IStoreRepository";
 import type { IProductRepository } from "../../domain/repositories/IProductRepository";
 import { seedStores, generateSeedProducts } from "../../data/seed";
+import { Logger } from "../../shared/logger";
 
 export async function seedDatabase(
   db: IDatabase,
@@ -10,24 +11,26 @@ export async function seedDatabase(
 ): Promise<void> {
   const existingStores = await storeRepository.findAll();
   if (existingStores.data.length > 0) {
-    console.log("Database already contains data, skipping seed");
+    Logger.info("Database already contains data, skipping seed");
     return;
   }
 
-  console.log("Seeding database...");
+  Logger.info("Seeding database...");
 
-  // Seed stores and collect created stores with IDs
   const createdStores = [];
   for (const store of seedStores) {
     const createdStore = await storeRepository.create(store);
     createdStores.push(createdStore);
   }
-  console.log(`Seeded ${createdStores.length} stores`);
+  Logger.info(`Seeded ${createdStores.length} stores`, {
+    storeCount: createdStores.length,
+  });
 
-  // Generate and seed products using created stores with IDs
   const products = generateSeedProducts(createdStores);
   for (const product of products) {
     await productRepository.create(product);
   }
-  console.log(`Seeded ${products.length} products`);
+  Logger.info(`Seeded ${products.length} products`, {
+    productCount: products.length,
+  });
 }

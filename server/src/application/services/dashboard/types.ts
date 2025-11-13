@@ -1,0 +1,53 @@
+export interface DashboardStats {
+  totalStores: number;
+  totalProducts: number;
+  totalInventoryValue: number;
+  lowStockCount: number;
+}
+
+export interface CategoryData {
+  category: string;
+  count: number;
+}
+
+export interface StoreData {
+  storeId: string;
+  storeName: string;
+  productCount: number;
+  inventoryValue: number;
+}
+
+export interface StockLevelData {
+  date: string;
+  totalStock: number;
+}
+
+export interface InventoryValueData {
+  date: string;
+  totalValue: number;
+}
+
+export interface LowStockAlert {
+  productId: string;
+  productName: string;
+  storeId: string;
+  storeName: string;
+  category: string;
+  stockQuantity: number;
+}
+
+export interface ActivityItem {
+  type: "add" | "update" | "store";
+  text: string;
+  timestamp: string;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  categories: CategoryData[];
+  stores: StoreData[];
+  stockLevels: StockLevelData[];
+  inventoryValue: InventoryValueData[];
+  alerts: LowStockAlert[];
+  activity: ActivityItem[];
+}

@@ -1,20 +1,24 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type { ProductService } from "../../../application/services/ProductService";
-import { successResponse, errorResponse } from "../types";
+import { successResponse } from "../types";
 import {
   createValidationError,
   createNotFoundError,
-  createInternalServerError,
 } from "../../../domain/errors";
 import { apiPath } from "../../../shared/config/apiVersion";
+import "../middleware/shared/types"; // Import for Express type augmentation
 
 export class ProductController {
   constructor(private productService: ProductService) {}
 
-  async getAllProducts(req: Request, res: Response): Promise<void> {
+  async getAllProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const path = apiPath("/products");
     try {
-      const validatedParams = (req as any).validatedTableQuery || {};
+      const validatedParams = req.validatedTableQuery || {};
 
       if (
         !validatedParams.search &&
@@ -33,99 +37,61 @@ export class ProductController {
         res.status(200).json(response);
       }
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "products",
-            "FETCH_ERROR",
-            "Failed to fetch products"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async getProductById(req: Request, res: Response): Promise<void> {
+  async getProductById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/products/${id}`);
 
     if (!id) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "id",
-            "MISSING_REQUIRED",
-            "Product ID is required"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Product ID is required"
+      ) as unknown as Error;
     }
 
     try {
       const product = await this.productService.getProductById(id);
       if (!product) {
-        const response = errorResponse(
-          [
-            createNotFoundError(
-              "id",
-              "PRODUCT_NOT_FOUND",
-              `Product with id '${id}' not found`
-            ),
-          ],
-          path,
-          "GET"
-        );
-        res.status(404).json(response);
-        return;
+        throw createNotFoundError(
+          "id",
+          "PRODUCT_NOT_FOUND",
+          `Product with id '${id}' not found`
+        ) as unknown as Error;
       }
 
       const response = successResponse(product, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "product",
-            "FETCH_ERROR",
-            "Failed to fetch product"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async getProductsByStoreId(req: Request, res: Response): Promise<void> {
+  async getProductsByStoreId(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { storeId } = req.params;
     const path = apiPath(`/stores/${storeId}/products`);
 
     if (!storeId) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "storeId",
-            "MISSING_REQUIRED",
-            "Store ID is required"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "storeId",
+        "MISSING_REQUIRED",
+        "Store ID is required"
+      ) as unknown as Error;
     }
 
     try {
-      const validatedParams = (req as any).validatedTableQuery || {};
+      const validatedParams = req.validatedTableQuery || {};
 
       if (
         !validatedParams.search &&
@@ -147,228 +113,108 @@ export class ProductController {
         res.status(200).json(response);
       }
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "products",
-            "FETCH_ERROR",
-            "Failed to fetch products for store"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async createProduct(req: Request, res: Response): Promise<void> {
+  async createProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const path = apiPath("/products");
-    const body = req.body as {
-      storeId?: string;
-      name?: string;
-      category?: string;
-      stockQuantity?: number;
-      price?: number;
-    };
+    const validatedBody = req.validatedCreateProductBody;
 
-    const errors = [];
-    if (!body.storeId) {
-      errors.push(
-        createValidationError(
-          "storeId",
-          "MISSING_REQUIRED",
-          "storeId is required"
-        )
-      );
-    }
-    if (
-      !body.name ||
-      typeof body.name !== "string" ||
-      body.name.trim().length === 0
-    ) {
-      errors.push(
-        createValidationError("name", "MISSING_REQUIRED", "name is required")
-      );
-    }
-    if (
-      !body.category ||
-      typeof body.category !== "string" ||
-      body.category.trim().length === 0
-    ) {
-      errors.push(
-        createValidationError(
-          "category",
-          "MISSING_REQUIRED",
-          "category is required"
-        )
-      );
-    }
-    if (typeof body.stockQuantity !== "number") {
-      errors.push(
-        createValidationError(
-          "stockQuantity",
-          "INVALID_TYPE",
-          "stockQuantity must be a number"
-        )
-      );
-    }
-    if (typeof body.price !== "number") {
-      errors.push(
-        createValidationError("price", "INVALID_TYPE", "price must be a number")
-      );
-    }
-
-    if (errors.length > 0) {
-      const response = errorResponse(errors, path, "POST");
-      res.status(400).json(response);
-      return;
+    if (!validatedBody) {
+      throw createValidationError(
+        "body",
+        "MISSING_REQUIRED",
+        "Request body validation failed"
+      ) as unknown as Error;
     }
 
     try {
       const product = await this.productService.createProduct({
-        storeId: body.storeId!,
-        name: body.name!,
-        category: body.category!,
-        stockQuantity: body.stockQuantity!,
-        price: body.price!,
+        storeId: validatedBody.storeId,
+        name: validatedBody.name,
+        category: validatedBody.category,
+        stockQuantity: validatedBody.stockQuantity,
+        price: validatedBody.price,
       });
       const response = successResponse(product, path, "POST");
       res.status(201).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "product",
-            "CREATE_ERROR",
-            "Failed to create product"
-          ),
-        ],
-        path,
-        "POST"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async updateProduct(req: Request, res: Response): Promise<void> {
+  async updateProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
     const path = apiPath(`/products/${id}`);
-    const body = req.body as {
-      storeId?: string;
-      name?: string;
-      category?: string;
-      stockQuantity?: number;
-      price?: number;
-    };
 
-    const errors = [];
     if (!id) {
-      errors.push(
-        createValidationError(
-          "id",
-          "MISSING_REQUIRED",
-          "Product ID is required"
-        )
-      );
-    }
-    if (
-      body.stockQuantity !== undefined &&
-      typeof body.stockQuantity !== "number"
-    ) {
-      errors.push(
-        createValidationError(
-          "stockQuantity",
-          "INVALID_TYPE",
-          "stockQuantity must be a number"
-        )
-      );
-    }
-    if (body.price !== undefined && typeof body.price !== "number") {
-      errors.push(
-        createValidationError("price", "INVALID_TYPE", "price must be a number")
-      );
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Product ID is required"
+      ) as unknown as Error;
     }
 
-    if (errors.length > 0) {
-      const response = errorResponse(errors, path, "PUT");
-      res.status(400).json(response);
-      return;
+    const validatedBody = req.validatedUpdateProductBody;
+
+    if (!validatedBody) {
+      throw createValidationError(
+        "body",
+        "MISSING_REQUIRED",
+        "Request body validation failed"
+      ) as unknown as Error;
     }
 
     try {
-      const product = await this.productService.updateProduct(id!, body);
+      const product = await this.productService.updateProduct(
+        id,
+        validatedBody
+      );
       const response = successResponse(product, path, "PUT");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createNotFoundError(
-            "id",
-            "PRODUCT_NOT_FOUND",
-            `Product with id '${id}' not found`
-          ),
-        ],
-        path,
-        "PUT"
-      );
-      res.status(404).json(response);
+      next(error);
     }
   }
 
-  async deleteProduct(req: Request, res: Response): Promise<void> {
+  async deleteProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
-    const path = apiPath(`/products/${id}`);
 
     if (!id) {
-      const response = errorResponse(
-        [
-          createValidationError(
-            "id",
-            "MISSING_REQUIRED",
-            "Product ID is required"
-          ),
-        ],
-        path,
-        "DELETE"
-      );
-      res.status(400).json(response);
-      return;
+      throw createValidationError(
+        "id",
+        "MISSING_REQUIRED",
+        "Product ID is required"
+      ) as unknown as Error;
     }
 
     try {
       const deleted = await this.productService.deleteProduct(id);
       if (!deleted) {
-        const response = errorResponse(
-          [
-            createNotFoundError(
-              "id",
-              "PRODUCT_NOT_FOUND",
-              `Product with id '${id}' not found`
-            ),
-          ],
-          path,
-          "DELETE"
-        );
-        res.status(404).json(response);
-        return;
+        throw createNotFoundError(
+          "id",
+          "PRODUCT_NOT_FOUND",
+          `Product with id '${id}' not found`
+        ) as unknown as Error;
       }
 
       // 204 No Content - successful deletion with no response body
       res.status(204).send("");
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "product",
-            "DELETE_ERROR",
-            "Failed to delete product"
-          ),
-        ],
-        path,
-        "DELETE"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 }

@@ -11,7 +11,7 @@ import { StoreRepository } from "./data/repositories/StoreRepository";
 import { ProductRepository } from "./data/repositories/ProductRepository";
 import { StoreService } from "./application/services/StoreService";
 import { ProductService } from "./application/services/ProductService";
-import { DashboardService } from "./application/services/DashboardService";
+import { DashboardService } from "./application/services/dashboard";
 import { StoreController } from "./presentation/http/controllers/StoreController";
 import { ProductController } from "./presentation/http/controllers/ProductController";
 import { DashboardController } from "./presentation/http/controllers/DashboardController";
@@ -25,25 +25,20 @@ describe("API Integration Tests", () => {
   let testDbPath: string;
 
   beforeAll(async () => {
-    // Create a copy of the database for testing
     const originalDbPath = path.join(__dirname, "../data/inventory.db");
     testDbPath = path.join(__dirname, "../data/inventory.test.db");
 
-    // Copy the database file
     if (fs.existsSync(originalDbPath)) {
       fs.copyFileSync(originalDbPath, testDbPath);
     }
 
-    // Initialize test database
     database = new SqliteDatabase(testDbPath);
     await database.connect();
     await runMigrations(database);
 
-    // Initialize repositories
     const storeRepository = new StoreRepository(database);
     const productRepository = new ProductRepository(database);
 
-    // Initialize services
     const storeService = new StoreService(
       storeRepository,
       productRepository,
@@ -52,12 +47,10 @@ describe("API Integration Tests", () => {
     const productService = new ProductService(productRepository);
     const dashboardService = new DashboardService(database);
 
-    // Initialize controllers
     const storeController = new StoreController(storeService);
     const productController = new ProductController(productService);
     const dashboardController = new DashboardController(dashboardService);
 
-    // Initialize HTTP server
     const httpServer = new ExpressHttpServer();
     setupBodyParser(httpServer.getExpressApp());
     setupRoutes(
@@ -72,7 +65,6 @@ describe("API Integration Tests", () => {
   });
 
   afterAll(async () => {
-    // Clean up test database
     if (fs.existsSync(testDbPath)) {
       fs.unlinkSync(testDbPath);
     }

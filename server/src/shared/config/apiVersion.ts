@@ -4,7 +4,6 @@
  * To upgrade the API version, simply change the CURRENT_VERSION value.
  * All routes will automatically use the new version.
  *
- * Example: Change from "v1" to "v2" to upgrade all endpoints.
  */
 export const CURRENT_API_VERSION = "v1";
 

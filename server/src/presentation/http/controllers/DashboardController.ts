@@ -1,219 +1,39 @@
-import type { Request, Response } from "express";
-import type { DashboardService } from "../../../application/services/DashboardService";
-import { successResponse, errorResponse } from "../types";
-import { createInternalServerError } from "../../../domain/errors";
+import type { Request, Response, NextFunction } from "express";
+import type { DashboardService } from "../../../application/services/dashboard";
+import { successResponse } from "../types";
 import { apiPath } from "../../../shared/config/apiVersion";
 
 export class DashboardController {
   constructor(private dashboardService: DashboardService) {}
 
-  async getStats(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/stats");
+  async getAllDashboardData(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const path = apiPath("/dashboard");
     try {
-      const stats = await this.dashboardService.getStats();
-      const response = successResponse(stats, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch dashboard stats"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
+      const data = await this.dashboardService.getAllDashboardData();
 
-  async getCategoryData(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/categories");
-    try {
-      const data = await this.dashboardService.getCategoryData();
       const response = successResponse(data, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch category data"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 
-  async getStoreData(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/stores");
-    const view = req.query.view as "count" | "value" | undefined;
-    try {
-      const data = await this.dashboardService.getStoreData();
-      const sortedData =
-        view === "value"
-          ? [...data].sort((a, b) => b.inventoryValue - a.inventoryValue)
-          : data;
-      const response = successResponse(sortedData, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch store data"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
-
-  async getStockLevelData(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/stock-levels");
-    const period = (req.query.period as "7d" | "30d" | "90d") || "7d";
-    try {
-      const data = await this.dashboardService.getStockLevelData(period);
-      const response = successResponse(data, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch stock level data"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
-
-  async getInventoryValueData(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/inventory-value");
-    const period = (req.query.period as "7d" | "30d" | "90d") || "7d";
-    try {
-      const data = await this.dashboardService.getInventoryValueData(period);
-      const response = successResponse(data, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch inventory value data"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
-
-  async getLowStockAlerts(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard/alerts");
-    const limit = req.query.limit
-      ? parseInt(req.query.limit as string, 10)
-      : 10;
-    try {
-      const alerts = await this.dashboardService.getLowStockAlerts(limit);
-      const response = successResponse(alerts, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch low stock alerts"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
-
-  async getRecentActivity(req: Request, res: Response): Promise<void> {
+  async getRecentActivity(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const path = apiPath("/dashboard/activity");
-    const limit = req.query.limit
-      ? parseInt(req.query.limit as string, 10)
-      : 10;
     try {
-      const activity = await this.dashboardService.getRecentActivity(limit);
+      const activity = await this.dashboardService.getRecentActivity();
       const response = successResponse(activity, path, "GET");
       res.status(200).json(response);
     } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch recent activity"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
-    }
-  }
-
-  async getAllDashboardData(req: Request, res: Response): Promise<void> {
-    const path = apiPath("/dashboard");
-    try {
-      // Parse query parameters for flexible data fetching
-      const query = req.query;
-      const options = {
-        includeStats: query.stats !== "false",
-        includeCategories: query.categories !== "false",
-        includeStores: query.stores !== "false",
-        includeStockLevels: query.stockLevels !== "false",
-        includeInventoryValue: query.inventoryValue !== "false",
-        includeAlerts: query.alerts !== "false",
-        includeActivity: query.activity !== "false",
-        stockPeriod: (query.stockPeriod as "7d" | "30d" | "90d") || "7d",
-        valuePeriod: (query.valuePeriod as "7d" | "30d" | "90d") || "7d",
-        alertsLimit: query.alertsLimit
-          ? parseInt(query.alertsLimit as string, 10)
-          : 10,
-        activityLimit: query.activityLimit
-          ? parseInt(query.activityLimit as string, 10)
-          : 10,
-      };
-
-      const data = await this.dashboardService.getAllDashboardData(options);
-
-      const response = successResponse(data, path, "GET");
-      res.status(200).json(response);
-    } catch (error) {
-      const response = errorResponse(
-        [
-          createInternalServerError(
-            "dashboard",
-            "FETCH_ERROR",
-            "Failed to fetch dashboard data"
-          ),
-        ],
-        path,
-        "GET"
-      );
-      res.status(500).json(response);
+      next(error);
     }
   }
 }

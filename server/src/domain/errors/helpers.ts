@@ -1,5 +1,4 @@
 import type {
-  ServerError,
   ValidationError,
   NotFoundError,
   DbError,

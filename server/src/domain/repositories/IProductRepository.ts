@@ -2,11 +2,11 @@ import type { Product, ProductId } from "../entities/Product";
 import type { StoreId } from "../entities/Store";
 
 export interface ProductQueryParams {
-  search?: string;
-  filters?: string;
-  sort?: string;
-  page?: number;
-  pageSize?: number;
+  search?: string | undefined;
+  filters?: string | undefined;
+  sort?: string | undefined;
+  page?: number | undefined;
+  pageSize?: number | undefined;
 }
 
 export interface ProductQueryResult {

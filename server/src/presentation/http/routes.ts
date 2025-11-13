@@ -1,5 +1,5 @@
 import type { IHttpServer } from "./IHttpServer";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type { StoreController } from "./controllers/StoreController";
 import type { ProductController } from "./controllers/ProductController";
 import type { DashboardController } from "./controllers/DashboardController";
@@ -7,6 +7,9 @@ import { successResponse } from "./types";
 import { apiPath } from "../../shared/config/apiVersion";
 import { validateTableQueryMiddleware } from "./middleware/validateTableQuery";
 import { validateCreateStoreMiddleware } from "./middleware/validateCreateStore";
+import { validateUpdateStoreMiddleware } from "./middleware/validateUpdateStore";
+import { validateCreateProductMiddleware } from "./middleware/validateCreateProduct";
+import { validateUpdateProductMiddleware } from "./middleware/validateUpdateProduct";
 
 export function setupRoutes(
   server: IHttpServer,
@@ -14,7 +17,6 @@ export function setupRoutes(
   productController: ProductController,
   dashboardController: DashboardController
 ): void {
-  // CORS middleware
   server.use(async (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
@@ -28,11 +30,6 @@ export function setupRoutes(
     next();
   });
 
-  server.use(async (req, res, next) => {
-    next();
-  });
-
-  // Health check (unversioned)
   server.get("/", async (req: Request, res: Response) => {
     const response = successResponse(
       { message: "Inventory Manager API", status: "ok" },
@@ -42,82 +39,83 @@ export function setupRoutes(
     res.status(200).json(response);
   });
 
-  // Store routes
   server.get(
     apiPath("/stores"),
     validateTableQueryMiddleware(apiPath("/stores")),
-    (req: Request, res: Response) => storeController.getAllStores(req, res)
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.getAllStores(req, res, next)
   );
-  server.get(apiPath("/stores/:id"), (req: Request, res: Response) =>
-    storeController.getStoreById(req, res)
+  server.get(
+    apiPath("/stores/:id"),
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.getStoreById(req, res, next)
   );
-  server.get(apiPath("/stores/:id/details"), (req: Request, res: Response) =>
-    storeController.getStoreDetails(req, res)
+  server.get(
+    apiPath("/stores/:id/details"),
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.getStoreDetails(req, res, next)
   );
   server.post(
     apiPath("/stores"),
     validateCreateStoreMiddleware(apiPath("/stores")),
-    (req: Request, res: Response) => storeController.createStore(req, res)
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.createStore(req, res, next)
   );
-  server.put(apiPath("/stores/:id"), (req: Request, res: Response) =>
-    storeController.updateStore(req, res)
+  server.put(
+    apiPath("/stores/:id"),
+    validateUpdateStoreMiddleware(apiPath("/stores/:id")),
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.updateStore(req, res, next)
   );
-  server.delete(apiPath("/stores/:id"), (req: Request, res: Response) =>
-    storeController.deleteStore(req, res)
+  server.delete(
+    apiPath("/stores/:id"),
+    (req: Request, res: Response, next: NextFunction) =>
+      storeController.deleteStore(req, res, next)
   );
 
-  // Product routes
   server.get(
     apiPath("/products"),
     validateTableQueryMiddleware(apiPath("/products")),
-    (req: Request, res: Response) => productController.getAllProducts(req, res)
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.getAllProducts(req, res, next)
   );
-  server.get(apiPath("/products/:id"), (req: Request, res: Response) =>
-    productController.getProductById(req, res)
+  server.get(
+    apiPath("/products/:id"),
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.getProductById(req, res, next)
   );
   server.get(
     apiPath("/stores/:storeId/products"),
     validateTableQueryMiddleware(apiPath("/stores/:storeId/products")),
-    (req: Request, res: Response) =>
-      productController.getProductsByStoreId(req, res)
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.getProductsByStoreId(req, res, next)
   );
-  server.post(apiPath("/products"), (req: Request, res: Response) =>
-    productController.createProduct(req, res)
+  server.post(
+    apiPath("/products"),
+    validateCreateProductMiddleware(apiPath("/products")),
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.createProduct(req, res, next)
   );
-  server.put(apiPath("/products/:id"), (req: Request, res: Response) =>
-    productController.updateProduct(req, res)
+  server.put(
+    apiPath("/products/:id"),
+    validateUpdateProductMiddleware(apiPath("/products/:id")),
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.updateProduct(req, res, next)
   );
-  server.delete(apiPath("/products/:id"), (req: Request, res: Response) =>
-    productController.deleteProduct(req, res)
+  server.delete(
+    apiPath("/products/:id"),
+    (req: Request, res: Response, next: NextFunction) =>
+      productController.deleteProduct(req, res, next)
   );
 
-  // Dashboard routes
-  server.get(apiPath("/dashboard"), (req: Request, res: Response) =>
-    dashboardController.getAllDashboardData(req, res)
-  );
-  server.get(apiPath("/dashboard/stats"), (req: Request, res: Response) =>
-    dashboardController.getStats(req, res)
-  );
-  server.get(apiPath("/dashboard/categories"), (req: Request, res: Response) =>
-    dashboardController.getCategoryData(req, res)
-  );
-  server.get(apiPath("/dashboard/stores"), (req: Request, res: Response) =>
-    dashboardController.getStoreData(req, res)
+  server.get(
+    apiPath("/dashboard"),
+    (req: Request, res: Response, next: NextFunction) =>
+      dashboardController.getAllDashboardData(req, res, next)
   );
   server.get(
-    apiPath("/dashboard/stock-levels"),
-    (req: Request, res: Response) =>
-      dashboardController.getStockLevelData(req, res)
-  );
-  server.get(
-    apiPath("/dashboard/inventory-value"),
-    (req: Request, res: Response) =>
-      dashboardController.getInventoryValueData(req, res)
-  );
-  server.get(apiPath("/dashboard/alerts"), (req: Request, res: Response) =>
-    dashboardController.getLowStockAlerts(req, res)
-  );
-  server.get(apiPath("/dashboard/activity"), (req: Request, res: Response) =>
-    dashboardController.getRecentActivity(req, res)
+    apiPath("/dashboard/activity"),
+    (req: Request, res: Response, next: NextFunction) =>
+      dashboardController.getRecentActivity(req, res, next)
   );
 }
