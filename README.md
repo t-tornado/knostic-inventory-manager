@@ -81,6 +81,12 @@ RESTful API versioned at `/api/v1` with endpoints for stores, products, and dash
 - **Rationale:** Easy to test, swap implementations, maintain single responsibility
 - **Trade-off:** Slightly more verbose than direct imports, but much better testability
 
+**Testing: Cypress and Vitest**
+
+- **Decision:** Most widely used React frontend testing tool with e2e testing capabilities
+- **Rationale:** Supports component, e2e testing
+- **Trade-off:** Can be tricky to configure and to enhance.
+
 ### Performance Optimizations
 
 **Optimistic Updates**
