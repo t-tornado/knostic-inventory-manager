@@ -134,7 +134,7 @@ export const StoreList = () => {
         tableRef.current?.upsertRow(result.id, result);
         handleCloseModal();
       }
-    } catch (error) {
+    } catch {
       if (selectedStore && originalStore) {
         setSelectedStore(originalStore);
         setModalOpen(true);
@@ -149,7 +149,7 @@ export const StoreList = () => {
       await deleteStoreMutation.mutateAsync(storeId);
       tableRef.current?.deleteRow(storeId);
       handleCloseModal();
-    } catch (error) {
+    } catch {
       if (storeToDelete) {
         tableRef.current?.upsertRow(storeToDelete.id, storeToDelete);
       }
