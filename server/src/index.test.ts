@@ -9,6 +9,7 @@ import {
 } from "./infrastructure/http";
 import { StoreRepository } from "./data/repositories/StoreRepository";
 import { ProductRepository } from "./data/repositories/ProductRepository";
+import { DashboardRepository } from "./data/repositories/DashboardRepository";
 import { StoreService } from "./application/services/StoreService";
 import { ProductService } from "./application/services/ProductService";
 import { DashboardService } from "./application/services/dashboard";
@@ -38,6 +39,7 @@ describe("API Integration Tests", () => {
 
     const storeRepository = new StoreRepository(database);
     const productRepository = new ProductRepository(database);
+    const dashboardRepository = new DashboardRepository(database);
 
     const storeService = new StoreService(
       storeRepository,
@@ -45,7 +47,7 @@ describe("API Integration Tests", () => {
       database
     );
     const productService = new ProductService(productRepository);
-    const dashboardService = new DashboardService(database);
+    const dashboardService = new DashboardService(dashboardRepository);
 
     const storeController = new StoreController(storeService);
     const productController = new ProductController(productService);

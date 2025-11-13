@@ -7,6 +7,7 @@ import {
 } from "../../../domain/errors";
 import { apiPath } from "../../../shared/config/apiVersion";
 import "../middleware/shared/types"; // Import for Express type augmentation
+import { Logger } from "../../../shared/logger";
 
 export class ProductController {
   constructor(private productService: ProductService) {}
@@ -164,6 +165,16 @@ export class ProductController {
       ) as unknown as Error;
     }
 
+    // Validate ID is a valid number
+    const numericId = Number(id);
+    if (isNaN(numericId) || !Number.isInteger(numericId)) {
+      throw createValidationError(
+        "id",
+        "INVALID_FORMAT",
+        `Product ID must be a valid integer, got: '${id}'`
+      ) as unknown as Error;
+    }
+
     const validatedBody = req.validatedUpdateProductBody;
 
     if (!validatedBody) {
@@ -175,6 +186,16 @@ export class ProductController {
     }
 
     try {
+      // Check if product exists before attempting update
+      const existingProduct = await this.productService.getProductById(id);
+      if (!existingProduct) {
+        throw createNotFoundError(
+          "id",
+          "PRODUCT_NOT_FOUND",
+          `Product with id '${id}' not found`
+        ) as unknown as Error;
+      }
+
       const product = await this.productService.updateProduct(
         id,
         validatedBody
@@ -201,8 +222,18 @@ export class ProductController {
       ) as unknown as Error;
     }
 
+    const numericId = Number(id);
+    if (isNaN(numericId)) {
+      throw createValidationError(
+        "id",
+        "INVALID_FORMAT",
+        `Product ID must be a number, got: '${id}'`
+      ) as unknown as Error;
+    }
+
     try {
       const deleted = await this.productService.deleteProduct(id);
+      Logger.info("> > > > deleted", { deleted });
       if (!deleted) {
         throw createNotFoundError(
           "id",
@@ -211,7 +242,6 @@ export class ProductController {
         ) as unknown as Error;
       }
 
-      // 204 No Content - successful deletion with no response body
       res.status(204).send("");
     } catch (error) {
       next(error);

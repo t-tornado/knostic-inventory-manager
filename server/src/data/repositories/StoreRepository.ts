@@ -122,10 +122,9 @@ export class StoreRepository implements IStoreRepository {
     return updated;
   }
 
-  async delete(id: StoreId): Promise<boolean> {
-    const result = await this.db.execute("DELETE FROM stores WHERE id = ?", [
-      id,
-    ]);
+  async delete(id: StoreId, transactionDb?: IDatabase): Promise<boolean> {
+    const db = transactionDb || this.db;
+    const result = await db.execute("DELETE FROM stores WHERE id = ?", [id]);
     return result.changes > 0;
   }
 }

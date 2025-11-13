@@ -8,6 +8,7 @@ export const responseInterceptor = (response: AxiosResponse) => {
 export const errorInterceptor = (
   error: AxiosError<ApiResponse<unknown>>
 ): Promise<never> => {
+  console.log("error", error);
   if (error.response?.data) {
     const responseData = error.response.data;
 

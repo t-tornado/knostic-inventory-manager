@@ -18,11 +18,7 @@ function handleApiResponse<T>(
     throw new Error(errorMessages || defaultErrorMessage);
   }
 
-  if (!response.data) {
-    throw new Error(defaultErrorMessage);
-  }
-
-  return response.data;
+  return response.data as T;
 }
 
 export function buildUrl(path: string, queryParams?: URLSearchParams): string {

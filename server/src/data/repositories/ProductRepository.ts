@@ -2,12 +2,14 @@ import type {
   IProductRepository,
   ProductQueryParams,
   ProductQueryResult,
+  StoreStats,
 } from "../../domain/repositories/IProductRepository";
 import type { Product, ProductId } from "../../domain/entities/Product";
 import type { StoreId } from "../../domain/entities/Store";
 import type { ISODateTime, Price } from "../../domain/entities/ValueObject";
 import type { IDatabase } from "../../infrastructure/database";
 import { buildQuery } from "./queryBuilder";
+import { Logger } from "../../shared/logger";
 
 interface ProductRow {
   id: number;
@@ -115,10 +117,13 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findById(id: ProductId): Promise<Product | null> {
+    const numericId = id as unknown as number;
     const rows = await this.db.query<ProductRow>(
       "SELECT * FROM products WHERE id = ?",
-      [id]
+      [numericId]
     );
+
+    Logger.info("rows", { rows });
     if (rows.length === 0) {
       return null;
     }
@@ -236,7 +241,8 @@ export class ProductRepository implements IProductRepository {
   ): Promise<Product> {
     const existing = await this.findById(id);
     if (!existing) {
-      throw new Error(`Product with id ${id} not found`);
+      const numericId = id as unknown as number;
+      throw new Error(`Product with id ${numericId} not found`);
     }
 
     const updated: Product = {
@@ -245,16 +251,19 @@ export class ProductRepository implements IProductRepository {
       updatedAt: new Date().toISOString() as ISODateTime,
     };
 
+    // Convert branded types to numbers for database query
+    const numericId = id as unknown as number;
+    const numericStoreId = updated.storeId as unknown as number;
     await this.db.execute(
       "UPDATE products SET store_id = ?, name = ?, category = ?, stock_quantity = ?, price = ?, updated_at = ? WHERE id = ?",
       [
-        updated.storeId,
+        numericStoreId,
         updated.name,
         updated.category,
         updated.stockQuantity,
         updated.price,
         updated.updatedAt,
-        id,
+        numericId,
       ]
     );
 
@@ -262,17 +271,43 @@ export class ProductRepository implements IProductRepository {
   }
 
   async delete(id: ProductId): Promise<boolean> {
+    const numericId = id as unknown as number;
     const result = await this.db.execute("DELETE FROM products WHERE id = ?", [
-      id,
+      numericId,
     ]);
+    Logger.info("result", { result });
     return result.changes > 0;
   }
 
-  async deleteByStoreId(storeId: StoreId): Promise<number> {
-    const result = await this.db.execute(
-      "DELETE FROM products WHERE store_id = ?",
-      [storeId]
-    );
+  async deleteByStoreId(
+    storeId: StoreId,
+    transactionDb?: IDatabase
+  ): Promise<number> {
+    const db = transactionDb || this.db;
+    const result = await db.execute("DELETE FROM products WHERE store_id = ?", [
+      storeId,
+    ]);
     return result.changes;
+  }
+
+  async getStoreStats(storeId: StoreId): Promise<StoreStats> {
+    const result = await this.db.query<{
+      total_products: number;
+      total_value: number;
+      low_stock_count: number;
+    }>(
+      `SELECT 
+        (SELECT COUNT(*) FROM products WHERE store_id = ?) as total_products,
+        (SELECT COALESCE(SUM(price * stock_quantity), 0) FROM products WHERE store_id = ?) as total_value,
+        (SELECT COUNT(*) FROM products WHERE store_id = ? AND stock_quantity < 10) as low_stock_count`,
+      [storeId, storeId, storeId]
+    );
+
+    const row = result[0];
+    return {
+      totalProducts: row?.total_products ?? 0,
+      totalValue: Math.round((row?.total_value ?? 0) * 100) / 100,
+      lowStockItems: row?.low_stock_count ?? 0,
+    };
   }
 }

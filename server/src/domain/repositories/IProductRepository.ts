@@ -1,5 +1,6 @@
 import type { Product, ProductId } from "../entities/Product";
 import type { StoreId } from "../entities/Store";
+import type { IDatabase } from "../../infrastructure/database";
 
 export interface ProductQueryParams {
   search?: string | undefined;
@@ -14,6 +15,12 @@ export interface ProductQueryResult {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface StoreStats {
+  totalProducts: number;
+  totalValue: number;
+  lowStockItems: number;
 }
 
 export interface IProductRepository {
@@ -33,5 +40,6 @@ export interface IProductRepository {
     product: Partial<Omit<Product, "id" | "createdAt">>
   ): Promise<Product>;
   delete(id: ProductId): Promise<boolean>;
-  deleteByStoreId(storeId: StoreId): Promise<number>;
+  deleteByStoreId(storeId: StoreId, transactionDb?: IDatabase): Promise<number>;
+  getStoreStats(storeId: StoreId): Promise<StoreStats>;
 }

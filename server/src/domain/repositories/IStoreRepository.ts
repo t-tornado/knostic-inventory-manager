@@ -1,4 +1,5 @@
 import type { Store, StoreId } from "../entities/Store";
+import type { IDatabase } from "../../infrastructure/database";
 
 export interface StoreQueryParams {
   search?: string | undefined;
@@ -23,5 +24,5 @@ export interface IStoreRepository {
     id: StoreId,
     store: Partial<Omit<Store, "id" | "createdAt">>
   ): Promise<Store>;
-  delete(id: StoreId): Promise<boolean>;
+  delete(id: StoreId, transactionDb?: IDatabase): Promise<boolean>;
 }

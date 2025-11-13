@@ -25,7 +25,7 @@ function getStatusCodeForError(error: ServerError): number {
  * Integrated error handling middleware
  */
 export function setupErrorHandler(app: Express): void {
-  app.use((err: Error, req: Request, res: Response) => {
+  app.use((err: Error, req: Request, res: Response, _next: () => void) => {
     const context = {
       path: req.path || req.url || "/",
       method: req.method || "UNKNOWN",

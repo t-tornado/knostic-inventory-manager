@@ -40,27 +40,10 @@ export class StoreService {
       return null;
     }
 
-    // Get stats in a single query
-    const result = await this.db.query<{
-      total_products: number;
-      total_value: number;
-      low_stock_count: number;
-    }>(
-      `SELECT 
-        (SELECT COUNT(*) FROM products WHERE store_id = ?) as total_products,
-        (SELECT COALESCE(SUM(price * stock_quantity), 0) FROM products WHERE store_id = ?) as total_value,
-        (SELECT COUNT(*) FROM products WHERE store_id = ? AND stock_quantity < 10) as low_stock_count`,
-      [storeId, storeId, storeId]
-    );
-
-    const row = result[0];
+    const stats = await this.productRepository.getStoreStats(storeId);
     return {
       store,
-      stats: {
-        totalProducts: row?.total_products ?? 0,
-        totalValue: Math.round((row?.total_value ?? 0) * 100) / 100,
-        lowStockItems: row?.low_stock_count ?? 0,
-      },
+      stats,
     };
   }
 
@@ -81,8 +64,9 @@ export class StoreService {
 
   async deleteStore(id: string): Promise<boolean> {
     const storeId = createStoreId(Number(id));
-    // Delete associated products first (handled by CASCADE in DB, but explicit for clarity)
-    await this.productRepository.deleteByStoreId(storeId);
-    return this.storeRepository.delete(storeId);
+    return this.db.transaction(async (transactionDb) => {
+      await this.productRepository.deleteByStoreId(storeId, transactionDb);
+      return this.storeRepository.delete(storeId, transactionDb);
+    });
   }
 }
