@@ -20,7 +20,6 @@ export function TableProvider({
   getRowId,
   onRowClick,
 }: TableProviderProps) {
-  // Validate configuration
   const validation = validateConfig(config);
   if (!validation.valid) {
     throw new Error(
@@ -28,19 +27,16 @@ export function TableProvider({
     );
   }
 
-  // Parse schema
   const parsedSchema = useMemo(
     () => parseSchema(config.schema),
     [config.schema]
   );
 
-  // Create initial columns from schema
   const initialColumns = useMemo(
     () => createColumnsFromSchema(parsedSchema, config.customization),
     [parsedSchema, config.customization]
   );
 
-  // Merge initial state
   const initialState = useMemo(() => {
     const baseState = {
       ...defaultTableState,
@@ -56,15 +52,10 @@ export function TableProvider({
     };
 
     if (config.initialState) {
-      // Build column visibility: if URL state specifies visible columns,
-      // set all others to false; otherwise use defaults
       let columnVisibility = baseState.columnVisibility;
       const urlColumnVisibility = config.initialState.columnVisibility;
       if (urlColumnVisibility) {
-        // URL state provides specific visible columns
-        // Start with all columns hidden, then set visible ones to true
         columnVisibility = initialColumns.reduce((acc, col) => {
-          // If URL specifies this column as visible, show it; otherwise hide it
           acc[col.id] = urlColumnVisibility[col.id] === true;
           return acc;
         }, {} as Record<string, boolean>);
@@ -73,9 +64,7 @@ export function TableProvider({
       return {
         ...baseState,
         ...config.initialState,
-        // Override columnVisibility with merged result
         columnVisibility,
-        // Deep merge for nested objects
         pagination: {
           ...baseState.pagination,
           ...config.initialState.pagination,
@@ -88,9 +77,7 @@ export function TableProvider({
           ...baseState.grouping,
           ...config.initialState.grouping,
         },
-        // Deep merge filters array
         filters: config.initialState.filters ?? baseState.filters,
-        // Deep merge columnSorting array
         columnSorting:
           config.initialState.columnSorting ?? baseState.columnSorting,
       };
@@ -99,10 +86,8 @@ export function TableProvider({
     return baseState;
   }, [initialColumns, config.initialState]);
 
-  // Initialize reducer
   const [state, dispatch] = useReducer(tableReducer, initialState);
 
-  // Merge config with defaults
   const mergedConfig = useMemo(
     () => ({
       ...config,

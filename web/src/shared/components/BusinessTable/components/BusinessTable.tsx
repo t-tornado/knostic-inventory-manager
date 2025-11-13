@@ -11,7 +11,11 @@ export const BusinessTable = forwardRef<
     props;
 
   return (
-    <TableProvider config={config} getRowId={getRowId} onRowClick={onRowClick}>
+    <TableProvider
+      config={config}
+      getRowId={getRowId as ((row: unknown) => string | number) | undefined}
+      onRowClick={onRowClick}
+    >
       <BusinessTableInner
         onFiltersChange={onFiltersChange}
         onStateChange={onStateChange}

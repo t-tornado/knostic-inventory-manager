@@ -20,7 +20,8 @@ export const createAxiosApiClient: ApiClientFactory<
   }
 
   if (responseInterceptor) {
-    instance.interceptors.response.use(responseInterceptor);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    instance.interceptors.response.use(responseInterceptor as any);
   }
 
   return instance;

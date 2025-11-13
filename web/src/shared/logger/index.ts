@@ -21,13 +21,16 @@ export interface PayloadEvent {
   };
 }
 
-type Consumer = (event: PayloadEvent) => void;
+type WindowCasted = Window & Record<string, unknown>;
+
+const getWindowCasted = (): WindowCasted => {
+  return window as unknown as WindowCasted;
+};
 
 export class WebLogger {
   private featureFlagKey: string;
   private appName?: string;
   private showTimestamp: boolean;
-  private static consumer: Consumer | undefined;
   private showMeta: boolean;
   constructor(opts: LoggerOptions = {}) {
     this.featureFlagKey = opts.featureFlagKey ?? "GistDebugMode";
@@ -53,34 +56,26 @@ export class WebLogger {
     try {
       const localStorageValue = localStorage.getItem(this.featureFlagKey);
       if (!localStorageValue) {
-        return (
-          (window as Record<string, unknown>)[this.featureFlagKey] === true
-        );
+        return getWindowCasted()[this.featureFlagKey] === true;
       }
       return localStorageValue === "true";
     } catch {
-      return (window as Record<string, unknown>)[this.featureFlagKey] === true;
+      return getWindowCasted()[this.featureFlagKey] === true;
     }
   }
 
   disable() {
     try {
       localStorage.removeItem(this.featureFlagKey);
-      (window as Record<string, unknown>)[this.featureFlagKey] = false;
+      getWindowCasted()[this.featureFlagKey] = false;
     } catch {
-      (window as Record<string, unknown>)[this.featureFlagKey] = false;
+      getWindowCasted()[this.featureFlagKey] = false;
     }
-  }
-
-  static setPayloadConsumer(consumer?: Consumer) {
-    WebLogger.consumer = consumer;
   }
 
   #enabled(): boolean {
     try {
-      const winFlag = Boolean(
-        (window as Record<string, unknown>)[this.featureFlagKey]
-      );
+      const winFlag = Boolean(getWindowCasted()[this.featureFlagKey]);
       const localFlag = localStorage.getItem(this.featureFlagKey) === "true";
       return winFlag || localFlag;
     } catch {
@@ -143,53 +138,37 @@ export class WebLogger {
     };
 
     console.groupCollapsed(header, ...styles);
-    this.#kv("Level", level);
-    this.#kv("Time", ts);
-    if (this.appName) this.#kv("App", this.appName);
-    if (context) this.#kv("Context", context, true);
+    this.kv("Level", level);
+    this.kv("Time", ts);
+    if (this.appName) this.kv("App", this.appName);
+    if (context) this.kv("Context", context, true);
 
     if (payload !== undefined) {
-      this.#section("Payload");
+      this.section("Payload");
       if (typeof payload === "object" && payload !== null) console.dir(payload);
       else console.log(payload);
     }
 
     if (this.showMeta) {
-      this.#section("Meta");
+      this.section("Meta");
       console.log({ url: meta.url, userAgent: meta.userAgent });
       if (meta.stack) {
-        this.#section("Trace");
+        this.section("Trace");
         console.log(meta.stack);
       }
     }
 
     console.groupEnd();
-
-    if (WebLogger.consumer) {
-      try {
-        WebLogger.consumer({
-          level,
-          message,
-          context,
-          payload,
-          timestamp: ts,
-          appName: this.appName,
-          meta,
-        });
-      } catch (err) {
-        console.warn("WebLogger consumer threw:", err);
-      }
-    }
   }
 
-  #section(title: string) {
+  section(title: string) {
     console.log(
       `%c${title}`,
       "font-weight:700; text-transform:uppercase; letter-spacing:.02em;"
     );
   }
 
-  #kv(label: string, value: unknown, boldValue = false) {
+  kv(label: string, value: unknown, boldValue = false) {
     const l = "%c" + label + ":";
     const lStyle = "color:#374151; font-weight:600;";
     const vStyle = boldValue ? "font-weight:700;" : "";

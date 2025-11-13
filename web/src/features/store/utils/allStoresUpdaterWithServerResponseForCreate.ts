@@ -8,11 +8,12 @@ export const allStoresUpdaterWithServerResponseForCreate = (
   return (old: StoreQueryUpdater) => {
     if (!old) return old;
 
-    const updatedData = old.data.map((s: Store) =>
-      String(s.id).startsWith("temp-") ? createdStore : s
+    const data = old.data as Store[];
+    const updatedData = data.map((store) =>
+      String(store.id).startsWith("temp-") ? createdStore : store
     );
 
-    if (!updatedData.some((s: Store) => s.id === createdStore.id)) {
+    if (!updatedData.some((store) => store.id === createdStore.id)) {
       updatedData.unshift(createdStore);
     }
 

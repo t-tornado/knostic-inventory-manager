@@ -16,13 +16,12 @@ export const allProductsUpdaterWithServerResponseForCreate = (
       storeName: "",
     };
 
-    const updatedData = old.data.map((p: ProductWithStoreName) =>
+    const data = old.data as ProductWithStoreName[];
+    const updatedData = data.map((p) =>
       String(p.id).startsWith("temp-") ? productWithStoreName : p
     );
 
-    if (
-      !updatedData.some((p: ProductWithStoreName) => p.id === createdProduct.id)
-    ) {
+    if (!updatedData.some((p) => p.id === createdProduct.id)) {
       updatedData.unshift(productWithStoreName);
     }
 
