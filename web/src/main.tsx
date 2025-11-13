@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import { AppProvider } from "@/app/providers";
 import type { FeatureRoutes } from "@/shared/types";
 
+/**
+ * This  is a template like implementation for auto route discovery so we dont pollute the main.tsx file with routes.
+ */
 const routeModules = import.meta.glob<{ [key: string]: FeatureRoutes }>(
   "./features/*/routes.{ts,tsx}",
   { eager: true }
