@@ -117,6 +117,7 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
         height: "100%",
         maxHeight: "100%",
         position: "relative",
+        backgroundColor: "background.default",
         overflow: "auto",
         "& .MuiTable-root": {
           position: "relative",
@@ -202,7 +203,6 @@ export function Table({ data, isLoading, error, refetch }: TableProps) {
         : undefined,
       sx: {
         cursor: onRowClick ? "pointer" : "default",
-        bgcolor: "background.paper",
         "&:hover": onRowClick
           ? {
               backgroundColor: (theme) =>

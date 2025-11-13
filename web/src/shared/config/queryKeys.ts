@@ -4,6 +4,9 @@ import type {
 } from "@/features/store/types";
 
 export const queryKeys = {
+  businessTable: {
+    base: "table" as const,
+  },
   stores: {
     all: ["stores"] as const,
     list: (params?: StoreQueryParams) => ["stores", "list", params] as const,

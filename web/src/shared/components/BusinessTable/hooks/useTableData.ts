@@ -3,6 +3,8 @@ import { useMemo, useCallback } from "react";
 import { useTableState } from "./useTableState";
 import { encodeTableStateToParams } from "../utils/state/encoder";
 import { MRT_RowData } from "material-react-table";
+import { OptionalRowId, RawRowId } from "../types";
+import { queryKeys } from "@/shared/config/queryKeys";
 
 export function useTableData() {
   const { state, dispatch, config, getRowId } = useTableState();
@@ -13,7 +15,7 @@ export function useTableData() {
   }, [state]);
 
   const queryKey = useMemo(() => {
-    const baseKey = [config.queryKeyPrefix || "table", requestParams];
+    const baseKey = [config.queryKeyPrefix || queryKeys.businessTable.base, requestParams];
     return baseKey;
   }, [config.queryKeyPrefix, requestParams]);
 
@@ -81,7 +83,7 @@ export function useTableData() {
   );
 
   const upsertRowById = useCallback(
-    (rowId: string | number | undefined, newRow: MRT_RowData) => {
+    (rowId: OptionalRowId, newRow: MRT_RowData) => {
       const resolvedId = rowId ?? resolveRowId(newRow);
       if (resolvedId === undefined || resolvedId === null) return;
 
@@ -124,7 +126,7 @@ export function useTableData() {
   );
 
   const deleteRowById = useCallback(
-    (rowId: string | number) => {
+    (rowId: RawRowId) => {
       if (rowId === undefined || rowId === null) return;
       queryClient.setQueryData(queryKey, (old: MRT_RowData) => {
         if (!old) return old;

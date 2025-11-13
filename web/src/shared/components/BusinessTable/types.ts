@@ -226,3 +226,6 @@ export interface BusinessTableHandle {
   upsertRow: (rowId: string | number | undefined, row: TableRowData) => void;
   deleteRow: (rowId: string | number) => void;
 }
+
+export type RawRowId = string | number;
+export type OptionalRowId = string | number | undefined;
