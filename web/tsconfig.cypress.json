@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/features/*": ["./src/features/*"],
+      "@/core/*": ["./src/core/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/infrastructure/*": ["./src/infrastructure/*"]
+    }
+  },
+  "include": [
+    "src/test/**/*.cy.ts",
+    "src/test/**/*.cy.tsx",
+    "cypress/**/*.ts",
+    "cypress/**/*.tsx"
+  ],
+  "exclude": []
+}

@@ -20,6 +20,7 @@ interface StatCardProps {
   };
   icon: React.ReactNode;
   iconColor?: "primary" | "success" | "warning" | "error";
+  testId?: string;
 }
 
 export const StatCard = ({
@@ -28,6 +29,7 @@ export const StatCard = ({
   change,
   icon,
   iconColor = "primary",
+  testId,
 }: StatCardProps) => {
   const theme = useTheme();
 
@@ -35,14 +37,20 @@ export const StatCard = ({
 
   const iconStyle = iconColors[iconColor];
 
+  // Use provided testId or generate from title (e.g., "Total Stores" -> "stat-total-stores")
+  const finalTestId =
+    testId || `stat-${title.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
-    <StyledStatCard>
+    <StyledStatCard data-testid={finalTestId}>
       <StyledStatCardContent>
         <StyledStatCardIcon bgcolor={iconStyle.bg} iconColor={iconStyle.color}>
           {icon}
         </StyledStatCardIcon>
         <StyledStatCardTitle variant='overline'>{title}</StyledStatCardTitle>
-        <StyledStatCardValue variant='h5'>{value}</StyledStatCardValue>
+        <StyledStatCardValue variant='h5' data-testid={`${finalTestId}-value`}>
+          {value}
+        </StyledStatCardValue>
         {change && (
           <StyledStatCardChange isPositive={change.isPositive}>
             {change.isPositive ? "↑" : "↓"}

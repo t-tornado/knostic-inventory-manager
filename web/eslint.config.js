@@ -24,6 +24,8 @@ export default defineConfig([
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-namespace": "off",
+      "react-refresh/only-export-components": "off",
     },
   },
 ]);

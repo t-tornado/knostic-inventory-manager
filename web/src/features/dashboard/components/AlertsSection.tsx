@@ -11,12 +11,13 @@ interface AlertsSectionProps {
 export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
   if (alerts.length === 0) {
     return (
-      <StyledSectionCard>
+      <StyledSectionCard data-testid='alerts-section'>
         <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
         <Typography
           variant='body2'
           color='text.secondary'
           sx={{ p: 2, textAlign: "center" }}
+          data-testid='alerts-empty'
         >
           No low stock alerts at this time.
         </Typography>
@@ -25,7 +26,7 @@ export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
   }
 
   return (
-    <StyledSectionCard>
+    <StyledSectionCard data-testid='alerts-section'>
       <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
       <Box
         sx={{
@@ -33,6 +34,7 @@ export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
           overflowY: "auto",
           mt: 2,
         }}
+        data-testid='alerts-list'
       >
         {alerts.map((alert) => (
           <AlertItem key={`${alert.productId}-${alert.storeId}`} data={alert} />

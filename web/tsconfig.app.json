@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "cypress", "jest", "node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -31,5 +31,14 @@
       "@/infrastructure/*": ["./src/infrastructure/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "cypress/component/dashboard.cy.tsrc/test/units/unit"],
+  "exclude": [
+    "src/test",
+    "**/*.cy.ts",
+    "**/*.cy.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
 }

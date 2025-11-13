@@ -20,14 +20,18 @@ interface ActivitySectionProps {
 const ActivityContent = ({ activity }: { activity: ActivityItemType[] }) => {
   if (activity.length === 0) {
     return (
-      <StyledEmptyState variant='body2' color='text.secondary'>
+      <StyledEmptyState
+        variant='body2'
+        color='text.secondary'
+        data-testid='activity-empty'
+      >
         No recent activity to display.
       </StyledEmptyState>
     );
   }
 
   return (
-    <StyledActivityList>
+    <StyledActivityList data-testid='activity-list'>
       {activity.map((item, index) => (
         <ActivityItem
           key={`${item.timestamp}-${index}`}
@@ -58,7 +62,7 @@ export const ActivitySection = ({
   error = null,
 }: ActivitySectionProps) => {
   return (
-    <StyledSectionCard>
+    <StyledSectionCard data-testid='activity-section'>
       <SectionHeader title='Recent Activity' icon={<AccessTimeIcon />} />
       {isLoading ? (
         <LoadingState />

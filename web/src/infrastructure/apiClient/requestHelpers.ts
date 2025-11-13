@@ -27,8 +27,15 @@ export async function getRequest<T>(
   url: string,
   defaultErrorMessage: string
 ): Promise<T> {
-  const response = await apiClient.get<ApiResponse<T>>(url);
-  return handleApiResponse(response, defaultErrorMessage);
+  try {
+    const response = await apiClient.get<ApiResponse<T>>(url);
+    return handleApiResponse(response, defaultErrorMessage);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(defaultErrorMessage);
+  }
 }
 
 export async function postRequest<T>(
@@ -37,8 +44,15 @@ export async function postRequest<T>(
   data: unknown,
   defaultErrorMessage: string
 ): Promise<T> {
-  const response = await apiClient.post<ApiResponse<T>>(url, data);
-  return handleApiResponse(response, defaultErrorMessage);
+  try {
+    const response = await apiClient.post<ApiResponse<T>>(url, data);
+    return handleApiResponse(response, defaultErrorMessage);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(defaultErrorMessage);
+  }
 }
 
 export async function putRequest<T>(
@@ -47,8 +61,15 @@ export async function putRequest<T>(
   data: unknown,
   defaultErrorMessage: string
 ): Promise<T> {
-  const response = await apiClient.put<ApiResponse<T>>(url, data);
-  return handleApiResponse(response, defaultErrorMessage);
+  try {
+    const response = await apiClient.put<ApiResponse<T>>(url, data);
+    return handleApiResponse(response, defaultErrorMessage);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(defaultErrorMessage);
+  }
 }
 
 export async function deleteRequest(
@@ -56,6 +77,13 @@ export async function deleteRequest(
   url: string,
   defaultErrorMessage: string
 ): Promise<void> {
-  const response = await apiClient.delete<ApiResponse<void>>(url);
-  handleApiResponse(response, defaultErrorMessage);
+  try {
+    const response = await apiClient.delete<ApiResponse<void>>(url);
+    handleApiResponse(response, defaultErrorMessage);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(defaultErrorMessage);
+  }
 }

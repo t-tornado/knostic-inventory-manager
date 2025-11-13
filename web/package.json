@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test": "cypress run --component",
+    "test:e2e": "cypress run --e2e"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,11 +31,15 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@cypress/react": "^9.0.1",
+    "@cypress/vite-dev-server": "^7.0.1",
     "@eslint/js": "^9.39.1",
+    "@testing-library/cypress": "^10.1.0",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
+    "cypress": "^15.6.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.24",

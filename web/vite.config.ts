@@ -8,6 +8,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@/features": path.resolve(__dirname, "./src/features"),
+      "@/core": path.resolve(__dirname, "./src/core"),
+      "@/shared": path.resolve(__dirname, "./src/shared"),
+      "@/app": path.resolve(__dirname, "./src/app"),
+      "@/infrastructure": path.resolve(__dirname, "./src/infrastructure"),
+      cypress: path.resolve(__dirname, "./cypress"),
     },
   },
 });

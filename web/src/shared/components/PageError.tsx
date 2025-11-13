@@ -20,6 +20,7 @@ export const PageError = ({
 }: PageErrorProps) => {
   return (
     <Box
+      data-testid='page-error'
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -38,14 +39,29 @@ export const PageError = ({
           mb: 1,
         }}
       />
-      <Typography variant='h5' component='h2' gutterBottom>
+      <Typography
+        variant='h5'
+        component='h2'
+        gutterBottom
+        data-testid='page-error-title'
+      >
         {title}
       </Typography>
-      <Typography variant='body1' color='text.secondary' sx={{ maxWidth: 500 }}>
+      <Typography
+        variant='body1'
+        color='text.secondary'
+        sx={{ maxWidth: 500 }}
+        data-testid='page-error-message'
+      >
         {message}
       </Typography>
       {onRetry && (
-        <Button variant='contained' onClick={onRetry} sx={{ mt: 2 }}>
+        <Button
+          variant='contained'
+          onClick={onRetry}
+          sx={{ mt: 2 }}
+          data-testid='page-error-retry'
+        >
           {retryLabel}
         </Button>
       )}

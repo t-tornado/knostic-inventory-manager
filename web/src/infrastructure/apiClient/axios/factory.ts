@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiClientFactory } from "../base";
 import axios, {
   type InternalAxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
+import { errorInterceptor } from "./interceptors/error";
 
 export const createAxiosApiClient: ApiClientFactory<
   InternalAxiosRequestConfig,
-  AxiosResponse<unknown, unknown, unknown>
+  AxiosResponse<any, any, any>
 > = (baseURL: string, requestInterceptor, responseInterceptor) => {
   const instance = axios.create({
     baseURL,
@@ -20,8 +22,9 @@ export const createAxiosApiClient: ApiClientFactory<
   }
 
   if (responseInterceptor) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    instance.interceptors.response.use(responseInterceptor as any);
+    instance.interceptors.response.use(responseInterceptor, errorInterceptor);
+  } else {
+    instance.interceptors.response.use(undefined, errorInterceptor);
   }
 
   return instance;

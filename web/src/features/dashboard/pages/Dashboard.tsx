@@ -57,19 +57,21 @@ export const DashboardPage = () => {
 
   return (
     <PageLayout title={DASHBOARD_TITLE} headerIcon={DASHBOARD_HEADER_ICON}>
-      <StatsGrid stats={data.stats} />
-      <ChartsGrid
-        categories={data.categories}
-        stores={data.stores}
-        stockLevels={data.stockLevels}
-        inventoryValue={data.inventoryValue}
-      />
-      <AlertsSection alerts={data.alerts} />
-      <ActivitySection
-        activity={activitiesData || []}
-        isLoading={isLoadingActivities}
-        error={activitiesError}
-      />
+      <div data-testid='dashboard-content'>
+        <StatsGrid stats={data.stats} />
+        <ChartsGrid
+          categories={data.categories}
+          stores={data.stores}
+          stockLevels={data.stockLevels}
+          inventoryValue={data.inventoryValue}
+        />
+        <AlertsSection alerts={data.alerts} />
+        <ActivitySection
+          activity={activitiesData || []}
+          isLoading={isLoadingActivities}
+          error={activitiesError}
+        />
+      </div>
     </PageLayout>
   );
 };

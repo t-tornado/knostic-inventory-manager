@@ -37,12 +37,14 @@ export const ActivityItem = ({ type, text, time }: ActivityItemProps) => {
   const colors = activityColors[type];
 
   return (
-    <StyledActivityItemContainer>
+    <StyledActivityItemContainer data-testid={`activity-item-${type}`}>
       <StyledActivityItemIcon bgcolor={colors.bg} color={colors.color}>
         <Icon sx={{ color: "primary.contrastText" }} />
       </StyledActivityItemIcon>
       <StyledActivityItemContent>
-        <StyledActivityItemText variant='body2'>{text}</StyledActivityItemText>
+        <StyledActivityItemText variant='body2' data-testid='activity-text'>
+          {text}
+        </StyledActivityItemText>
         <StyledActivityItemTime variant='caption'>
           {time}
         </StyledActivityItemTime>

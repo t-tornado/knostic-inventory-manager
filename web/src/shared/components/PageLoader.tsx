@@ -7,6 +7,7 @@ interface PageLoaderProps {
 export const PageLoader = ({ message = "Loading..." }: PageLoaderProps) => {
   return (
     <Box
+      data-testid='page-loader'
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -16,8 +17,12 @@ export const PageLoader = ({ message = "Loading..." }: PageLoaderProps) => {
         gap: 2,
       }}
     >
-      <CircularProgress size={48} />
-      <Typography variant='body1' color='text.secondary'>
+      <CircularProgress size={48} data-testid='page-loader-spinner' />
+      <Typography
+        variant='body1'
+        color='text.secondary'
+        data-testid='page-loader-message'
+      >
         {message}
       </Typography>
     </Box>

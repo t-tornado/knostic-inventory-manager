@@ -27,15 +27,23 @@ export const AlertItem = ({
   const description = `Store: ${data.storeName} • Category: ${data.category} • Current Stock: ${data.stockQuantity}`;
 
   return (
-    <StyledAlertItemContainer>
+    <StyledAlertItemContainer
+      data-testid={`alert-item-${data.productId}-${data.storeId}`}
+    >
       <StyledAlertItemIcon>
         <WarningIcon fontSize='small' sx={{ color: "primary.contrastText" }} />
       </StyledAlertItemIcon>
       <StyledAlertItemContent>
-        <StyledAlertItemTitle variant='subtitle2'>
+        <StyledAlertItemTitle
+          variant='subtitle2'
+          data-testid='alert-product-name'
+        >
           {title}
         </StyledAlertItemTitle>
-        <StyledAlertItemDescription variant='caption'>
+        <StyledAlertItemDescription
+          variant='caption'
+          data-testid='alert-store-name'
+        >
           {description}
         </StyledAlertItemDescription>
       </StyledAlertItemContent>

@@ -8,6 +8,10 @@ export interface BaseApiClient {
 
 export type InterceptorFn<T extends object = object> = (config: T) => T;
 
+export type ResponseInterceptorFn = (
+  response: unknown
+) => unknown | Promise<unknown>;
+
 export type ApiClientFactory<
   TReqConfig extends object = object,
   TResConfig extends object = object

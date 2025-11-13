@@ -39,7 +39,7 @@ export const ChartsGrid = ({
   const valueChartState = useValueChart();
 
   return (
-    <StyledChartsGrid>
+    <StyledChartsGrid data-testid='charts-grid'>
       <Box>
         <ChartCard title='Products by Category' icon={<PieChartIcon />}>
           <CategoryChart categories={categories} />
