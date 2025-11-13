@@ -1,33 +1,19 @@
-import { Box, Typography } from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import { Typography } from "@mui/material";
 
 interface HeaderTitleProps {
   title: string;
-  icon?: React.ReactNode;
 }
 
-export const HeaderTitle = ({ title, icon }: HeaderTitleProps) => {
+export const HeaderTitle = ({ title }: HeaderTitleProps) => {
   return (
-    <Box
+    <Typography
+      variant='h5'
       sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        minWidth: 0,
-        flex: "0 1 auto",
+        fontWeight: 700,
+        color: "text.primary",
       }}
     >
-      {icon || <DashboardIcon sx={{ color: "primary.main" }} />}
-      <Typography
-        variant='h4'
-        sx={{
-          fontSize: { xs: 24, sm: 28 },
-          fontWeight: 700,
-          color: "text.primary",
-        }}
-      >
-        {title}
-      </Typography>
-    </Box>
+      {title}
+    </Typography>
   );
 };

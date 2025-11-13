@@ -10,12 +10,15 @@ import {
   ActivitySection,
 } from "../components";
 
+const DASHBOARD_TITLE = "Dashboard";
+const DASHBOARD_HEADER_ICON = <ShowChartIcon />;
+
 export const DashboardPage = () => {
   const { data, isLoading, error, refetch } = useDashboard();
 
   if (isLoading) {
     return (
-      <PageLayout title='Inventory Dashboard' headerIcon={<ShowChartIcon />}>
+      <PageLayout title={DASHBOARD_TITLE} headerIcon={DASHBOARD_HEADER_ICON}>
         <PageLoader message='Loading dashboard data...' />
       </PageLayout>
     );
@@ -23,7 +26,7 @@ export const DashboardPage = () => {
 
   if (error) {
     return (
-      <PageLayout title='Inventory Dashboard' headerIcon={<ShowChartIcon />}>
+      <PageLayout title={DASHBOARD_TITLE} headerIcon={DASHBOARD_HEADER_ICON}>
         <PageError
           title='Failed to load dashboard'
           message={
@@ -37,7 +40,7 @@ export const DashboardPage = () => {
 
   if (!data) {
     return (
-      <PageLayout title='Inventory Dashboard' headerIcon={<ShowChartIcon />}>
+      <PageLayout title={DASHBOARD_TITLE} headerIcon={DASHBOARD_HEADER_ICON}>
         <PageError
           title='No data available'
           message='Dashboard data is not available at this time.'
@@ -47,7 +50,7 @@ export const DashboardPage = () => {
   }
 
   return (
-    <PageLayout title='Inventory Dashboard' headerIcon={<ShowChartIcon />}>
+    <PageLayout title={DASHBOARD_TITLE} headerIcon={DASHBOARD_HEADER_ICON}>
       <StatsGrid stats={data.stats} />
       <ChartsGrid
         categories={data.categories}

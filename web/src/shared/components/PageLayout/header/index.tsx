@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { HeaderTitle } from "./HeaderTitle";
 import { HeaderActions } from "./HeaderActions";
 import { ThemeToggle } from "./ThemeToggle";
@@ -31,9 +32,21 @@ export const Header = ({ title, icon, actions }: HeaderProps) => {
         flexDirection: { xs: "column", sm: "row" },
         gap: { xs: 2, sm: 0 },
         alignItems: { xs: "flex-start", sm: "center" },
+        height: "60px",
       }}
     >
-      <HeaderTitle title={title} icon={icon} />
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          minWidth: 0,
+          flex: "0 1 auto",
+        }}
+      >
+        {icon || <DashboardIcon sx={{ color: "primary.main" }} />}
+        <HeaderTitle title={title} />
+      </Box>
       <HeaderActions>
         <ThemeToggle />
         {actions}

@@ -8,12 +8,6 @@ export interface UseDashboardOptions {
   refetchInterval?: number | false;
 }
 
-/**
- * React Query hook for fetching dashboard data
- * Uses the singleton dashboardService instance by default
- * @param options - Options for React Query configuration
- * @returns React Query result with dashboard data
- */
 export function useDashboard(options: UseDashboardOptions = {}) {
   const { enabled = true, refetchInterval = false } = options;
 

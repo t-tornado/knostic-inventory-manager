@@ -1,5 +1,5 @@
-import { Button } from "@mui/material";
 import type { ButtonProps } from "@mui/material";
+import { StyledFilterButton } from "./styled";
 
 interface FilterButtonProps extends Omit<ButtonProps, "variant"> {
   active?: boolean;
@@ -11,22 +11,12 @@ export const FilterButton = ({
   ...props
 }: FilterButtonProps) => {
   return (
-    <Button
+    <StyledFilterButton
       variant={active ? "contained" : "outlined"}
       size='small'
-      sx={{
-        minWidth: "auto",
-        px: 1.5,
-        py: 0.75,
-        fontSize: 13,
-        textTransform: "none",
-        fontWeight: 500,
-        borderRadius: 2,
-        ...props.sx,
-      }}
       {...props}
     >
       {children}
-    </Button>
+    </StyledFilterButton>
   );
 };

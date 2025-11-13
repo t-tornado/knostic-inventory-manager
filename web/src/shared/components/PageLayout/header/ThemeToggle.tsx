@@ -16,10 +16,16 @@ export const ThemeToggle = () => {
           borderColor: "primary.main",
           transform: "scale(1.05)",
         },
+        height: "32px",
+        width: "32px",
       }}
       title={`Switch to ${mode === "dark" ? "light" : "dark"} mode`}
     >
-      {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+      {mode === "dark" ? (
+        <LightModeIcon sx={{ fontSize: "16px" }} />
+      ) : (
+        <DarkModeIcon sx={{ fontSize: "16px" }} />
+      )}
     </IconButton>
   );
 };

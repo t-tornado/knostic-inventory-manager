@@ -1,19 +1,24 @@
 import { Box } from "@mui/material";
-import { ChartCard } from "./ui";
+import { ChartCard } from "./atoms";
 import PieChartIcon from "@mui/icons-material/PieChart";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AreaChartIcon from "@mui/icons-material/AreaChart";
 import { CategoryChart } from "./CategoryChart";
-import { StockChart, StockChartFilters, useStockChart } from "./StockChart";
-import { StoreChart, StoreChartFilters, useStoreChart } from "./StoreChart";
-import { ValueChart, ValueChartFilters, useValueChart } from "./ValueChart";
+import { StockChart } from "./StockChart";
+import { useStockChart } from "../hooks/useStockChart";
+import { StoreChart } from "./StoreChart";
+import { StoreChartFilters } from "./StoreChartFilters";
+import { useStoreChart } from "../hooks/useStoreChart";
+import { ValueChart } from "./ValueChart";
+import { useValueChart } from "../hooks/useValueChart";
 import type {
   CategoryData,
   StoreData,
   StockLevelData,
   InventoryValueData,
 } from "../types";
+import { ChartPeriodFilters } from "./ChartPeriodFilters";
 
 interface ChartsGridProps {
   categories: CategoryData[];
@@ -53,7 +58,7 @@ export const ChartsGrid = ({
         <ChartCard
           title='Stock Levels Over Time'
           icon={<ShowChartIcon />}
-          actions={<StockChartFilters {...stockChartState} />}
+          actions={<ChartPeriodFilters {...stockChartState} />}
         >
           <StockChart
             period={stockChartState.period}
@@ -74,7 +79,7 @@ export const ChartsGrid = ({
         <ChartCard
           title='Inventory Value Trend'
           icon={<AreaChartIcon />}
-          actions={<ValueChartFilters {...valueChartState} />}
+          actions={<ChartPeriodFilters {...valueChartState} />}
         >
           <ValueChart
             period={valueChartState.period}

@@ -1,7 +1,3 @@
-/**
- * Dashboard data types matching the server API response structure
- */
-
 export interface DashboardStats {
   totalStores: number;
   totalProducts: number;
@@ -71,10 +67,6 @@ export interface DashboardDataOptions {
 }
 
 export interface IDashboardRepository {
-  /**
-   * Get all dashboard data
-   * @returns Promise resolving to the dashboard data
-   */
   getDashboard(): Promise<DashboardData>;
 }
 export interface IDashboardService {

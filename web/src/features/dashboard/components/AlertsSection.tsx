@@ -1,7 +1,8 @@
 import { Box, Typography } from "@mui/material";
-import { SectionCard, SectionHeader, AlertItem } from "./ui";
+import { SectionHeader, AlertItem } from "./atoms";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import type { LowStockAlert } from "../types";
+import { StyledSectionCard } from "./atoms/styled";
 
 interface AlertsSectionProps {
   alerts: LowStockAlert[];
@@ -10,7 +11,7 @@ interface AlertsSectionProps {
 export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
   if (alerts.length === 0) {
     return (
-      <SectionCard>
+      <StyledSectionCard>
         <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
         <Typography
           variant='body2'
@@ -19,12 +20,12 @@ export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
         >
           No low stock alerts at this time.
         </Typography>
-      </SectionCard>
+      </StyledSectionCard>
     );
   }
 
   return (
-    <SectionCard>
+    <StyledSectionCard>
       <SectionHeader title='Low Stock Alerts' icon={<NotificationsIcon />} />
       <Box
         sx={{
@@ -34,15 +35,9 @@ export const AlertsSection = ({ alerts }: AlertsSectionProps) => {
         }}
       >
         {alerts.map((alert) => (
-          <AlertItem
-            key={`${alert.productId}-${alert.storeId}`}
-            title={`${alert.productName} - Only ${alert.stockQuantity} unit${
-              alert.stockQuantity !== 1 ? "s" : ""
-            } remaining`}
-            description={`Store: ${alert.storeName} • Category: ${alert.category} • Current Stock: ${alert.stockQuantity}`}
-          />
+          <AlertItem key={`${alert.productId}-${alert.storeId}`} data={alert} />
         ))}
       </Box>
-    </SectionCard>
+    </StyledSectionCard>
   );
 };
