@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Box } from "@mui/material";
 import { PageLayout } from "@/shared/components/PageLayout";
 import StoreIcon from "@mui/icons-material/Store";
@@ -8,11 +8,8 @@ import {
   type BusinessTableHandle,
 } from "@/shared/components/BusinessTable";
 import type {
-  TableSchema,
   TableRequestParams,
   TableResponse,
-  TableCustomization,
-  Column,
 } from "@/shared/components/BusinessTable";
 import { StoreDetailsHeaderActions } from "../components";
 import {
@@ -26,6 +23,7 @@ import {
   StoreInfoActions,
   StoreStats,
   StoreStat,
+  StoreDetailsContainer,
 } from "../components/atoms";
 import { Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -35,83 +33,24 @@ import WarningIcon from "@mui/icons-material/Warning";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { StoreMetaModal } from "@/shared/components/StoreMetaModal";
 import type { ProductWithStoreName } from "@/features/product/types";
+import type { ProductPayload } from "@/features/product/validation";
 import { useStoreDetails, useUpdateStore, useDeleteStore } from "../hooks";
-import { useUpdateProduct, useDeleteProduct } from "@/features/product/hooks";
+import {
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+} from "@/features/product/hooks";
 import { storeService } from "../service";
 import { PageError } from "@/shared/components/PageError";
 import { PageLoader } from "@/shared/components/PageLoader";
 import type { Store } from "@/core/models/store/model";
-import { PRODUCT_CATEGORIES } from "@/features/product/constants";
+import {
+  PRODUCT_CATEGORIES,
+  PRODUCTS_SCHEMA,
+} from "@/features/product/constants";
 import { ProductMetaModal } from "@/shared/components/ProductMetaModal/ProductMetaModal";
-
-const storeProductsSchema: TableSchema = {
-  products: {
-    id: {
-      value_types: ["string"],
-      values: [],
-    },
-    name: {
-      value_types: ["string"],
-      values: [],
-    },
-    category: {
-      value_types: ["string", "enum"],
-      values: [...PRODUCT_CATEGORIES],
-    },
-    stockQuantity: {
-      value_types: ["number"],
-      values: [],
-    },
-    price: {
-      value_types: ["number"],
-      values: [],
-    },
-    createdAt: {
-      value_types: ["date"],
-      values: [],
-    },
-    updatedAt: {
-      value_types: ["date"],
-      values: [],
-    },
-  },
-};
-
-const tableCustomization: TableCustomization = {
-  formatFieldLabel: (field: string) => {
-    const labels: Record<string, string> = {
-      id: "ID",
-      name: "Product Name",
-      category: "Category",
-      stockQuantity: "Stock Quantity",
-      price: "Price",
-      createdAt: "Created At",
-      updatedAt: "Updated At",
-    };
-    return labels[field] || field;
-  },
-  renderCellValue: (column: Column, rowData: any) => {
-    const value = column.accessor(rowData);
-
-    if (column.field === "price") {
-      if (value !== null && value !== undefined) {
-        return `$${Number(value).toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
-      }
-      return "-";
-    }
-
-    if (column.field === "createdAt" || column.field === "updatedAt") {
-      if (value) {
-        return new Date(value as string).toLocaleDateString();
-      }
-    }
-
-    return value ?? "-";
-  },
-};
+import { createProductTableCustomization } from "@/features/product/utils/formatCellValue";
+import { formatDateTime } from "@/shared/utils/format";
 
 export const StoreDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -133,15 +72,17 @@ export const StoreDetails = () => {
   const [originalProduct, setOriginalProduct] =
     useState<ProductWithStoreName | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
+  const [isCreateMode, setIsCreateMode] = useState(false);
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  const updateStoreMutation = useUpdateStore();
+  const deleteStoreMutation = useDeleteStore();
 
   const storeInfo = storeDetails?.store;
   const stats = storeDetails?.stats;
 
-  const createdDate = storeInfo
-    ? new Date(storeInfo.createdAt).toLocaleDateString(undefined, {
-        dateStyle: "medium",
-      })
-    : "";
+  const createdDate = storeInfo ? formatDateTime(storeInfo.createdAt) : "";
 
   const handleEditStore = () => {
     if (storeInfo) {
@@ -151,12 +92,15 @@ export const StoreDetails = () => {
   };
 
   const handleAddProduct = () => {
-    console.log("Add product");
+    setSelectedProduct(null);
+    setIsCreateMode(true);
+    setDetailOpen(true);
   };
 
   const handleRowClick = (row: ProductWithStoreName) => {
     setSelectedProduct(row);
     setOriginalProduct({ ...row });
+    setIsCreateMode(false);
     setDetailOpen(true);
   };
 
@@ -168,12 +112,8 @@ export const StoreDetails = () => {
     setDetailOpen(false);
     setSelectedProduct(null);
     setOriginalProduct(null);
+    setIsCreateMode(false);
   };
-
-  const updateProductMutation = useUpdateProduct();
-  const deleteProductMutation = useDeleteProduct();
-  const updateStoreMutation = useUpdateStore();
-  const deleteStoreMutation = useDeleteStore();
 
   const handleUpdateProduct = async (updatedProduct: ProductWithStoreName) => {
     try {
@@ -188,6 +128,7 @@ export const StoreDetails = () => {
         },
       });
       tableRef.current?.updateRow(updatedProduct.id, updatedProduct);
+      await refetchStoreDetails();
       handleCloseDetail();
     } catch {
       if (originalProduct) {
@@ -198,11 +139,33 @@ export const StoreDetails = () => {
     }
   };
 
+  const handleCreateProduct = async (data: ProductPayload) => {
+    try {
+      const result = await createProductMutation.mutateAsync({
+        storeId: storeId,
+        name: data.name,
+        category: data.category,
+        stockQuantity: data.stockQuantity,
+        price: data.price,
+      });
+      const productWithStoreName: ProductWithStoreName = {
+        ...result,
+        storeName: storeInfo?.name,
+      };
+      tableRef.current?.upsertRow(result.id, productWithStoreName);
+      await refetchStoreDetails();
+      handleCloseDetail();
+    } catch {
+      //
+    }
+  };
+
   const handleDeleteProduct = async (productId: string) => {
     const productToDelete = selectedProduct;
     try {
       await deleteProductMutation.mutateAsync(productId);
       tableRef.current?.deleteRow(productId);
+      await refetchStoreDetails();
       handleCloseDetail();
     } catch {
       if (productToDelete) {
@@ -248,45 +211,38 @@ export const StoreDetails = () => {
 
   const categoryOptions = [...PRODUCT_CATEGORIES];
 
-  const getData = useMemo(
-    () =>
-      async (params: TableRequestParams): Promise<TableResponse> => {
-        const result = await storeService.getStoreProducts(storeId, {
-          search: params.search,
-          filters: params.filters,
-          sort: params.sort,
-          page: params.page,
-          pageSize: params.pageSize,
-        });
+  const getData = useCallback(
+    async (params: TableRequestParams): Promise<TableResponse> => {
+      const result = await storeService.getStoreProducts(storeId, {
+        search: params.search,
+        filters: params.filters,
+        sort: params.sort,
+        page: params.page,
+        pageSize: params.pageSize,
+      });
 
-        const productsWithStoreName: ProductWithStoreName[] = result.data.map(
-          (product) => ({
-            ...product,
-            storeName: storeInfo?.name,
-          })
-        );
+      const productsWithStoreName: ProductWithStoreName[] = result.data.map(
+        (product) => ({
+          ...product,
+          storeName: storeInfo?.name,
+        })
+      );
 
-        return {
-          data: productsWithStoreName,
-          meta: {
-            total: result.total,
-            page: result.page,
-            pageSize: result.pageSize,
-          },
-        };
-      },
+      return {
+        data: productsWithStoreName,
+        meta: {
+          total: result.total,
+          page: result.page,
+          pageSize: result.pageSize,
+        },
+      };
+    },
     [storeId, storeInfo?.name]
   );
 
   if (isLoadingDetails) {
     return (
-      <PageLayout
-        title='Store Details'
-        headerIcon={<StoreIcon />}
-        headerActions={
-          <StoreDetailsHeaderActions onAddProduct={handleAddProduct} />
-        }
-      >
+      <PageLayout title='Store Details' headerIcon={<StoreIcon />}>
         <PageLoader />
       </PageLayout>
     );
@@ -320,17 +276,7 @@ export const StoreDetails = () => {
         <StoreDetailsHeaderActions onAddProduct={handleAddProduct} />
       }
     >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          minHeight: 0,
-          maxHeight: "100%",
-          overflow: "hidden",
-          gap: 2,
-        }}
-      >
+      <StoreDetailsContainer>
         <StoreInfoCard>
           <StoreInfoHeader>
             <StoreInfoMain>
@@ -391,13 +337,14 @@ export const StoreDetails = () => {
         >
           <BusinessTable
             ref={tableRef}
-            schema={storeProductsSchema}
+            key={storeId}
+            schema={PRODUCTS_SCHEMA}
             processingMode='server'
             getData={getData}
             getRowId={(row) => (row?.id as string) || String(Math.random())}
             onRowClick={handleRowClick}
             onFiltersChange={handleFiltersChange}
-            customization={tableCustomization}
+            customization={createProductTableCustomization(false)}
             features={{
               enableFiltering: true,
               enableSearching: true,
@@ -407,19 +354,18 @@ export const StoreDetails = () => {
             }}
           />
         </Box>
-      </Box>
-      {selectedProduct && (
-        <ProductMetaModal
-          open={isDetailOpen}
-          mode='edit'
-          product={selectedProduct}
-          storeOptions={storeOptions}
-          categoryOptions={categoryOptions}
-          onClose={handleCloseDetail}
-          onUpdate={handleUpdateProduct}
-          onDelete={handleDeleteProduct}
-        />
-      )}
+      </StoreDetailsContainer>
+      <ProductMetaModal
+        open={isDetailOpen}
+        mode={isCreateMode ? "create" : "edit"}
+        product={selectedProduct}
+        storeOptions={storeOptions}
+        categoryOptions={categoryOptions}
+        onClose={handleCloseDetail}
+        onCreate={handleCreateProduct}
+        onUpdate={handleUpdateProduct}
+        onDelete={selectedProduct ? handleDeleteProduct : undefined}
+      />
       {storeInfo && (
         <StoreMetaModal
           open={isStoreModalOpen}

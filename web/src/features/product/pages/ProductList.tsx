@@ -18,10 +18,7 @@ import { productService } from "../service";
 import { useCreateProduct, useUpdateProduct, useDeleteProduct } from "../hooks";
 import { useStores } from "@/features/store/hooks";
 import { PRODUCT_CATEGORIES, PRODUCTS_SCHEMA } from "../constants";
-import {
-  formatProductFieldLabel,
-  renderProductCellValue,
-} from "../utils/formatCellValue";
+import { createProductTableCustomization } from "../utils/formatCellValue";
 import { ProductMetaModal } from "@/shared/components/ProductMetaModal/ProductMetaModal";
 
 const categoryOptions = [...PRODUCT_CATEGORIES];
@@ -169,10 +166,7 @@ export const ProductList = () => {
         onRowClick={handleRowClick}
         onStateChange={handleStateChange}
         initialState={urlInitialState}
-        customization={{
-          formatFieldLabel: formatProductFieldLabel,
-          renderCellValue: renderProductCellValue,
-        }}
+        customization={createProductTableCustomization()}
         slots={{
           ErrorState: ({ error, refetch }) => (
             <PageError

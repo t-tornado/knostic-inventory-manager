@@ -231,3 +231,23 @@ export const StoreId = ({ children, isLink, ...props }: StoreIdProps) => (
     </Typography>
   </Box>
 );
+
+export const StoreDetailsContainer = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      minHeight: 0,
+      maxHeight: "100%",
+      overflow: "hidden",
+      gap: 2,
+    }}
+  >
+    {children}
+  </Box>
+);

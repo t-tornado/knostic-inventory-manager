@@ -1,13 +1,20 @@
 import type { BaseApiClient } from "@/infrastructure/apiClient/base";
 import { apiClient } from "@/infrastructure/apiClient";
+import {
+  buildUrl,
+  getRequest,
+  postRequest,
+  putRequest,
+  deleteRequest,
+} from "@/infrastructure/apiClient/requestHelpers";
 import type {
   IProductService,
   ProductQueryParams,
   ProductQueryResult,
   RawProductType,
 } from "./types";
-import { ApiResponse } from "@/shared/api";
 import type { Product } from "@/core/models/product/model";
+import { buildQueryParams } from "@/shared/utils/queryParams";
 
 export function createProductService(
   apiClient: BaseApiClient
@@ -16,80 +23,32 @@ export function createProductService(
     async getProducts(
       params?: ProductQueryParams
     ): Promise<ProductQueryResult> {
-      const queryParams = new URLSearchParams();
-      if (params?.search) {
-        queryParams.append("search", params.search);
-      }
-      if (params?.filters) {
-        queryParams.append("filters", params.filters);
-      }
-      if (params?.sort) {
-        queryParams.append("sort", params.sort);
-      }
-      if (params?.page !== undefined) {
-        queryParams.append("page", params.page.toString());
-      }
-      if (params?.pageSize !== undefined) {
-        queryParams.append("pageSize", params.pageSize.toString());
-      }
-
-      const queryString = queryParams.toString();
-      const url = `/products${queryString ? `?${queryString}` : ""}`;
-
-      const response = await apiClient.get<ApiResponse<ProductQueryResult>>(
-        url
+      const queryParams = buildQueryParams(params);
+      const url = buildUrl("/products", queryParams);
+      return getRequest<ProductQueryResult>(
+        apiClient,
+        url,
+        "No data returned from products API"
       );
-
-      if (response.errors && response.errors.length > 0) {
-        throw new Error(
-          response.errors.map((err) => err.message).join(", ") ||
-            "Failed to fetch products"
-        );
-      }
-
-      if (!response.data) {
-        throw new Error("No data returned from products API");
-      }
-
-      return response.data;
     },
 
     async getProductById(id: string): Promise<Product> {
       const url = `/products/${id}`;
-
-      const response = await apiClient.get<ApiResponse<Product>>(url);
-
-      if (response.errors && response.errors.length > 0) {
-        throw new Error(
-          response.errors.map((err) => err.message).join(", ") ||
-            "Failed to fetch product"
-        );
-      }
-
-      if (!response.data) {
-        throw new Error("No data returned from product API");
-      }
-
-      return response.data;
+      return getRequest<Product>(
+        apiClient,
+        url,
+        "No data returned from product API"
+      );
     },
 
     async createProduct(product: RawProductType): Promise<Product> {
-      const url = `/products`;
-
-      const response = await apiClient.post<ApiResponse<Product>>(url, product);
-
-      if (response.errors && response.errors.length > 0) {
-        throw new Error(
-          response.errors.map((err) => err.message).join(", ") ||
-            "Failed to create product"
-        );
-      }
-
-      if (!response.data) {
-        throw new Error("No data returned from create product API");
-      }
-
-      return response.data;
+      const url = "/products";
+      return postRequest<Product>(
+        apiClient,
+        url,
+        product,
+        "No data returned from create product API"
+      );
     },
 
     async updateProduct(
@@ -97,34 +56,17 @@ export function createProductService(
       product: Partial<RawProductType>
     ): Promise<Product> {
       const url = `/products/${id}`;
-
-      const response = await apiClient.put<ApiResponse<Product>>(url, product);
-
-      if (response.errors && response.errors.length > 0) {
-        throw new Error(
-          response.errors.map((err) => err.message).join(", ") ||
-            "Failed to update product"
-        );
-      }
-
-      if (!response.data) {
-        throw new Error("No data returned from update product API");
-      }
-
-      return response.data;
+      return putRequest<Product>(
+        apiClient,
+        url,
+        product,
+        "No data returned from update product API"
+      );
     },
 
     async deleteProduct(id: string): Promise<void> {
       const url = `/products/${id}`;
-
-      const response = await apiClient.delete<ApiResponse<void>>(url);
-
-      if (response.errors && response.errors.length > 0) {
-        throw new Error(
-          response.errors.map((err) => err.message).join(", ") ||
-            "Failed to delete product"
-        );
-      }
+      return deleteRequest(apiClient, url, "Failed to delete product");
     },
   };
 }

@@ -6,3 +6,10 @@ export interface FeatureRoute {
 }
 
 export type FeatureRoutes = FeatureRoute[];
+
+export interface TableQueryParams {
+  search?: string;
+  filters?: string;
+  page?: number;
+  pageSize?: number;
+}

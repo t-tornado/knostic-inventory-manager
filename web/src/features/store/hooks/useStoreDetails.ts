@@ -8,12 +8,6 @@ export interface UseStoreDetailsOptions {
   refetchInterval?: number | false;
 }
 
-/**
- * React Query hook for fetching store details with stats
- * @param id - Store ID
- * @param options - Options for React Query configuration
- * @returns React Query result with store details
- */
 export function useStoreDetails(
   id: string,
   options: UseStoreDetailsOptions = {}

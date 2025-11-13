@@ -1,10 +1,27 @@
-import type { Column } from "@/shared/components/BusinessTable";
+import type {
+  Column,
+  TableCustomization,
+} from "@/shared/components/BusinessTable";
+import { formatCurrency } from "@/shared/utils/format";
 
 export const formatProductFieldLabel = (field: string): string => {
   const labels: Record<string, string> = {
     id: "ID",
     name: "Product Name",
     storeName: "Store",
+    category: "Category",
+    stockQuantity: "Stock Quantity",
+    price: "Price",
+    createdAt: "Created At",
+    updatedAt: "Updated At",
+  };
+  return labels[field] || field;
+};
+
+export const formatProductFieldLabelWithoutStore = (field: string): string => {
+  const labels: Record<string, string> = {
+    id: "ID",
+    name: "Product Name",
     category: "Category",
     stockQuantity: "Stock Quantity",
     price: "Price",
@@ -23,10 +40,10 @@ export const renderProductCellValue = (
   // Format price as currency
   if (column.field === "price") {
     if (value !== null && value !== undefined) {
-      return `$${Number(value).toLocaleString("en-US", {
+      return formatCurrency(Number(value), {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      })}`;
+      });
     }
     return "-";
   }
@@ -38,4 +55,20 @@ export const renderProductCellValue = (
   }
 
   return value ?? "-";
+};
+
+/**
+ * Creates table customization for product tables
+ * @param includeStoreName - Whether to include storeName in field labels (default: true)
+ * @returns TableCustomization object
+ */
+export const createProductTableCustomization = (
+  includeStoreName: boolean = true
+): TableCustomization => {
+  return {
+    formatFieldLabel: includeStoreName
+      ? formatProductFieldLabel
+      : formatProductFieldLabelWithoutStore,
+    renderCellValue: renderProductCellValue,
+  };
 };
